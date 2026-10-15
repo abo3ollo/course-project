@@ -23,7 +23,8 @@ import { useAuth } from "@/src/context/AuthContext";
 
 export default function LoginPage() {
   const router = useRouter();
-  const { setAuthenticatedUser } = useAuth();
+  const { refresh } = useAuth();  
+
   const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<loginSchemaType>({
@@ -45,14 +46,15 @@ export default function LoginPage() {
     try {
       const res = await api.post("/auth/login", payload);
 
-      const { user } = res.data.data;
-      setAuthenticatedUser(user);
+      // ✅ الأهم: حدّث الـ AuthContext
+      await refresh();
 
       toast.success("Logged In Successfully ", {
         position: "top-center",
       });
       router.push("/");
-      router.refresh(); 
+      router.refresh(); // ✅ refresh the page to update the UI after login
+
       
     } catch (err: any) {
       const message =

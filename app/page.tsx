@@ -1,10 +1,11 @@
-import DuskLandingPage from "@/src/pages";
-import Image from "next/image";
+import HomePage from "@/src/components/HomePage";
+
+
 
 export default function Home() {
   return (
     
-      <DuskLandingPage/>
+      <HomePage/>
     
   );
 }

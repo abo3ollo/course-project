@@ -17,7 +17,6 @@ type AuthContextType = {
   user: User | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  setAuthenticatedUser: (user: User) => void;
   logout: () => Promise<void>;
   refresh: () => Promise<void>;
 };
@@ -51,7 +50,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = async () => {
     try {
-      await api.post("/auth/logout", undefined, { withCredentials: true });
+      await api.post("/auth/logout");
+    } catch (err) {
+      console.error("Logout error:", err);
     } finally {
       setUser(null);
     }
@@ -63,10 +64,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         user,
         isLoading,
         isAuthenticated: !!user,
-        setAuthenticatedUser: (authenticatedUser) => {
-          setUser(authenticatedUser);
-          setIsLoading(false);
-        },
         logout,
         refresh,
       }}
