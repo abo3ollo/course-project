@@ -47,7 +47,9 @@ export default function RegisterPage() {
         position: "top-center",
       });
 
-      router.push("/login");
+      router.push(
+      `/verify-email/pending?email=${encodeURIComponent(values.email)}`
+    );
     } catch (err: any) {
       const message =
         err?.response?.data?.message || "Something went wrong. Try again.";

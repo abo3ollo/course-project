@@ -2,70 +2,75 @@
 
 import { Button } from "@/components/ui/button";
 import {
-  Field,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
+  Field, FieldError, FieldGroup, FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import axios from "axios";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import api from "@/lib/axios";
 import Link from "next/link";
 import { useState } from "react";
-import { loginSchema, loginSchemaType } from "@/src/schema/login.schema";
+import api from "@/lib/axios";
 import { useAuth } from "@/src/context/AuthContext";
+import { loginSchema, loginSchemaType } from "@/src/schema/login.schema";
 
 
 export default function LoginPage() {
   const router = useRouter();
-  const { refresh } = useAuth();  
-
+  const { refresh } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
 
+  // ✅ حالة "الإيميل مش متحقق"
+  const [needsVerification, setNeedsVerification] = useState(false);
+  const [unverifiedEmail, setUnverifiedEmail] = useState("");
+  const [isResending, setIsResending] = useState(false);
+
   const form = useForm<loginSchemaType>({
-    defaultValues: {
-      email: "",
-      password: "",
-    },
+    defaultValues: { email: "", password: "" },
     resolver: zodResolver(loginSchema),
   });
 
-  const { handleSubmit } = form;
-
   async function handleLogin(values: loginSchemaType) {
     setIsLoading(true);
-
-    // نشيل rePassword قبل ما نبعتها للـ Backend
-    const { ...payload } = values;
+    setNeedsVerification(false);
 
     try {
-      const res = await api.post("/auth/login", payload);
-
-      // ✅ الأهم: حدّث الـ AuthContext
+      await api.post("/auth/login", values);
       await refresh();
 
-      toast.success("Logged In Successfully ", {
-        position: "top-center",
-      });
+      toast.success("Logged In Successfully");
       router.push("/");
-      router.refresh(); // ✅ refresh the page to update the UI after login
-
-      
     } catch (err: any) {
+      const status = err?.response?.status;
       const message =
-        err?.response?.data?.message || "Something went wrong. Try again.";
+        err?.response?.data?.message || "Something went wrong.";
 
-      // لو الـ message array (زي الـ validators)، ناخد أول واحدة
-      const displayMessage = Array.isArray(message) ? message[0]?.msg : message;
-
-      toast.error(displayMessage, { position: "top-center" });
+      if (status === 403) {
+        // ✅ الإيميل مش متحقق
+        setNeedsVerification(true);
+        setUnverifiedEmail(values.email);
+        toast.error("Please verify your email first", {
+          position: "top-center",
+        });
+      } else {
+        const displayMessage = Array.isArray(message) ? message[0]?.msg : message;
+        toast.error(displayMessage, { position: "top-center" });
+      }
     } finally {
       setIsLoading(false);
+    }
+  }
+
+  async function handleResendVerification() {
+    setIsResending(true);
+    try {
+      await api.post("/auth/resend-verification", { email: unverifiedEmail });
+      toast.success("Verification email sent! Check your inbox.");
+    } catch {
+      toast.error("Failed to resend. Try again later.");
+    } finally {
+      setIsResending(false);
     }
   }
 
@@ -73,8 +78,7 @@ export default function LoginPage() {
     <div className="w-[90%] md:w-[50%] mx-auto my-20">
       <h2 className="text-center font-bold text-2xl mb-8">Log in Now!</h2>
 
-      <form className="space-y-6" onSubmit={handleSubmit(handleLogin)}>
-        
+      <form className="space-y-6" onSubmit={form.handleSubmit(handleLogin)}>
         {/* Email */}
         <FieldGroup>
           <Controller
@@ -90,9 +94,7 @@ export default function LoginPage() {
                   type="email"
                   placeholder="ahmed@example.com"
                 />
-                {fieldState.invalid && (
-                  <FieldError errors={[fieldState.error]} />
-                )}
+                {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
               </Field>
             )}
           />
@@ -113,27 +115,42 @@ export default function LoginPage() {
                   type="password"
                   placeholder="********"
                 />
-                {fieldState.invalid && (
-                  <FieldError errors={[fieldState.error]} />
-                )}
+                {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
               </Field>
             )}
           />
         </FieldGroup>
 
+        {/* ✅ لو الإيميل مش متحقق — اعرض زر Resend */}
+        {needsVerification && (
+          <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <p className="text-sm text-yellow-800 mb-3">
+              Your email is not verified. Check your inbox for the verification link.
+            </p>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleResendVerification}
+              disabled={isResending}
+              className="w-full"
+            >
+              {isResending ? "Sending..." : "Resend Verification Email"}
+            </Button>
+          </div>
+        )}
 
         <Button
           type="submit"
           disabled={isLoading}
           className="w-full bg-black text-white"
         >
-          {isLoading ? "Creating account..." : "Log In "}
+          {isLoading ? "Logging in..." : "Log In"}
         </Button>
 
         <p className="text-center text-sm">
-          Don't have an account?{" "}
+          Don&apos;t have an account?{" "}
           <Link href="/register" className="text-blue-600 hover:underline">
-            SignUp
+            Sign Up
           </Link>
         </p>
       </form>

@@ -80,19 +80,6 @@ export default function VerifyEmailPage() {
                                     Go Home
                                 </Button>
                             </Link>
-                            <Button
-                                onClick={async () => {
-                                    try {
-                                        // ⚠️ ده محتاج المستخدم يكون مسجل دخول
-                                        await api.post("/auth/resend-verification");
-                                        alert("Verification email sent!");
-                                    } catch (err) {
-                                        alert("Failed to resend. Please login first.");
-                                    }
-                                }}
-                            >
-                                Resend Verification Email
-                            </Button>
                         </div>
                     </>
                 )}
