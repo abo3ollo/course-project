@@ -107,11 +107,18 @@ export default function LoginPage() {
             control={form.control}
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid}>
-                <FieldLabel>Password</FieldLabel>
+                <div className="flex items-center justify-between mb-1">
+                  <FieldLabel>Password</FieldLabel>
+                  <Link
+                    href="/forgot-password"
+                    className="text-xs text-blue-600 hover:underline"
+                  >
+                    Forgot password?
+                  </Link>
+                </div>
                 <Input
                   {...field}
                   aria-invalid={fieldState.invalid}
-                  autoComplete="off"
                   type="password"
                   placeholder="********"
                 />

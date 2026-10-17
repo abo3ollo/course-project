@@ -15,7 +15,7 @@ export function middleware(request: NextRequest) {
   }
 
   // ── صفحات الـ auth (لو داخل، مش محتاج يفتحها) ──
-  const authPaths = ["/login", "/register", "/forgot-password"];
+  const authPaths = ["/login", "/register", "/forgot-password" , "/reset-password"];
   const isAuthPage = authPaths.some((p) => pathname.startsWith(p));
 
   if (isAuthPage && token) {
@@ -33,5 +33,6 @@ export const config = {
     "/login",
     "/register",
     "/forgot-password",
+    "/reset-password", 
   ],
 };
