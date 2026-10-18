@@ -22,7 +22,7 @@ export default function Navbar() {
   return (
     <nav className="border-b bg-white sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-        
+
         {/* Logo & Main Links */}
         <div className="flex items-center gap-8">
           <Link href="/" className="flex items-center gap-2 text-2xl font-bold text-indigo-600">
@@ -53,15 +53,20 @@ export default function Navbar() {
             <span className="text-sm text-gray-500">Loading...</span>
           ) : isAuthenticated ? (
             <>
-              <Link 
-                href="/profile" 
+              <Link
+                href="/profile"
                 className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-gray-200 hover:bg-gray-50 transition"
               >
                 {user?.avatar && !user.avatar.includes('default-avatar') ? (
-                  <img 
-                    src={user.avatar} 
-                    alt="Avatar" 
+                  <img
+                    src={user.avatar || "https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg"}
+                    alt="Avatar"
                     className="w-7 h-7 rounded-full object-cover"
+                    onError={(e) => {
+                      // لو الصورة فشلت تحميل، نرجع للحرف الأول
+                      e.currentTarget.style.display = 'none';
+                      e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                    }}
                   />
                 ) : (
                   <div className="w-7 h-7 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-xs">
@@ -72,7 +77,7 @@ export default function Navbar() {
                   {user?.firstName}
                 </span>
               </Link>
-              
+
               <Button
                 onClick={handleLogout}
                 variant="outline"

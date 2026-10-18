@@ -103,7 +103,7 @@ export default function ProfilePage() {
   return (
     <div className="min-h-screen bg-gray-50 py-10 px-4 sm:px-6 lg:px-8">
       <div className="max-w-5xl mx-auto space-y-8">
-        
+
         {/* Header */}
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Account Settings</h1>
@@ -121,24 +121,33 @@ export default function ProfilePage() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          
+
           {/* Left Column (Profile Info) */}
           <div className="lg:col-span-2 space-y-8">
-            
+
             {/* Avatar Card */}
             <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
               <h2 className="text-xl font-semibold text-gray-900 mb-1">Profile Picture</h2>
               <p className="text-sm text-gray-500 mb-6">This image will appear across your enrolled courses, certificates, and forum interactions.</p>
-              
+
               <div className="flex items-center gap-6">
                 <div className="relative">
                   {user?.avatar && !user.avatar.includes('default-avatar') ? (
-                    <img src={user.avatar} alt="Avatar" className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-md" />
-                  ) : (
-                    <div className="w-24 h-24 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold text-3xl border-4 border-white shadow-md">
-                      {user?.firstName?.charAt(0).toUpperCase()}
-                    </div>
-                  )}
+                    <img
+                      src={user.avatar}
+                      alt="Avatar"
+                      className="w-7 h-7 rounded-full object-cover"
+                      onError={(e) => {
+                        // لو الصورة اتكسرت، نخفيها ونظهر أول حرف
+                        e.currentTarget.style.display = 'none';
+                        e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                      }}
+                    />
+                  ) : null}
+                  {/* Fallback (يظهر لو مفيش صورة أو لو الصورة اتكسرت) */}
+                  <div className={`w-7 h-7 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-xs ${user?.avatar && !user.avatar.includes('default-avatar') ? 'hidden' : ''}`}>
+                    {user?.firstName?.charAt(0).toUpperCase()}
+                  </div>
                   <label className="absolute bottom-0 right-0 bg-indigo-600 text-white p-2 rounded-full cursor-pointer hover:bg-indigo-700 transition shadow-lg">
                     <Camera size={16} />
                     <input type="file" className="hidden" accept="image/*" onChange={handleAvatarUpload} disabled={isUploadingAvatar} />
@@ -216,7 +225,7 @@ export default function ProfilePage() {
 
           {/* Right Column (Security) */}
           <div className="lg:col-span-1 space-y-6">
-            
+
             {/* Change Password Card */}
             <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
               <div className="flex items-start gap-3 mb-6">
@@ -269,7 +278,7 @@ export default function ProfilePage() {
                     )}
                   />
                 </FieldGroup>
-                
+
                 <Button type="submit" disabled={isChangingPassword} className="w-full bg-rose-600 hover:bg-rose-700 text-white rounded-lg mt-2">
                   <Lock size={16} className="mr-2" />
                   {isChangingPassword ? "Changing..." : "Change Password"}
