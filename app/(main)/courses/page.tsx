@@ -6,8 +6,11 @@ import api from "@/lib/axios";
 
 import { BookOpen, Tag, User } from "lucide-react";
 import { Course } from "@/src/types";
+import { useAuth } from "@/src/context/AuthContext";
+import { Button } from "@/components/ui/button";
 
 export default function CoursesPage() {
+  const { user } = useAuth();
   const [courses, setCourses] = useState<Course[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -41,11 +44,21 @@ export default function CoursesPage() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
       {/* Header */}
-      <div className="mb-10 text-center md:text-left">
-        <h1 className="text-3xl font-bold text-gray-900">Browse Catalog</h1>
-        <p className="text-gray-500 mt-2">
-          Discover new skills and expand your knowledge with our top-rated courses.
-        </p>
+      <div className="flex flex-col md:flex-row md:items-center justify-between mb-10 gap-4">
+        <div className="text-center md:text-left">
+          <h1 className="text-3xl font-bold text-gray-900">Browse Catalog</h1>
+          <p className="text-gray-500 mt-2">
+            Discover new skills and expand your knowledge with our top-rated courses.
+          </p>
+        </div>
+
+        {(user?.role === "INSTRUCTOR" || user?.role === "ADMIN") && (
+          <Link href="/courses/create">
+            <Button className="bg-indigo-600 hover:bg-indigo-700 w-full md:w-auto">
+              + Create Course
+            </Button>
+          </Link>
+        )}
       </div>
 
       {courses.length === 0 ? (
@@ -57,8 +70,8 @@ export default function CoursesPage() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {courses.map((course) => (
-            <Link 
-              key={course._id} 
+            <Link
+              key={course._id}
               href={`/courses/${course._id}`}
               className="group flex flex-col bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-300"
             >
@@ -86,7 +99,7 @@ export default function CoursesPage() {
                 <h2 className="text-lg font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-indigo-600 transition-colors">
                   {course.title}
                 </h2>
-                
+
                 <p className="text-sm text-gray-500 line-clamp-2 mb-4 grow">
                   {course.description}
                 </p>
