@@ -29,6 +29,10 @@ export default function ProfilePage() {
   // --- Profile Form ---
   const profileForm = useForm<UpdateProfileSchemaType>({
     resolver: zodResolver(updateProfileSchema),
+    defaultValues: { 
+    firstName:"" ,
+    lastName:""
+  },
   });
 
   useEffect(() => {
