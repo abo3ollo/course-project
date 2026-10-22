@@ -6,7 +6,7 @@ import Link from "next/link";
 import api from "@/lib/axios";
 import { Course } from "@/src/types";
 import { Button } from "@/components/ui/button";
-import { Plus, Trash2, ArrowLeft, CheckCircle } from "lucide-react";
+import { Plus, Trash2, ArrowLeft, CheckCircle, Edit } from "lucide-react";
 import { toast } from "sonner";
 
 export default function ManageCoursePage() {
@@ -32,11 +32,24 @@ export default function ManageCoursePage() {
     if (courseId) fetchCourse();
   }, [courseId]);
 
+  // ✅ دالة مسح القسم
+  const handleDeleteSection = async (sectionId: string) => {
+    if (!confirm("Are you sure you want to delete this section?")) return;
+
+    try {
+      await api.delete(`/courses/${courseId}/sections/${sectionId}`);
+      toast.success("Section deleted successfully");
+      fetchCourse(); // تحديث الصفحة
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || "Failed to delete section");
+    }
+  };
+
   if (isLoading) return <div className="text-center py-20">Loading...</div>;
   if (!course) return <div className="text-center py-20">Course not found.</div>;
 
   return (
-    <div className="max-w-5xl mx-auto py-10 px-4">
+    <div className="w-[75%] mx-auto py-10 px-4">
       
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-10">
@@ -55,8 +68,8 @@ export default function ManageCoursePage() {
       {/* Sections List */}
       <div className="space-y-4 mb-8">
         {course.sections && course.sections.length > 0 ? (
-          course.sections.map((section, index) => (
-            <div key={index} className="border rounded-xl bg-white p-5 shadow-sm hover:shadow-md transition">
+          course.sections.map((section: any, index) => (
+            <div key={section._id || index} className="border rounded-xl bg-white p-5 shadow-sm hover:shadow-md transition">
               <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-lg flex items-center justify-center font-bold">
@@ -64,13 +77,30 @@ export default function ManageCoursePage() {
                   </div>
                   <div>
                     <h3 className="font-bold text-gray-900">{section.title}</h3>
-                    <p className="text-sm text-gray-500">{section.lessons?.length || 0} lectures</p>
+                    <p className="text-sm text-gray-500">
+                      {section.videoUrl ? "Video attached" : "No video"} • {section.duration || "0 min"}
+                    </p>
                   </div>
                 </div>
+                
                 <div className="flex gap-2 w-full md:w-auto">
-                  {/* ملاحظة: زرار إضافة الدرس هيتفعل في الخطوة الجاية */}
-                  <Button variant="outline" size="sm" className="flex-1 md:flex-none">Add Lesson</Button>
-                  <Button variant="ghost" size="sm" className="text-red-500 hover:bg-red-50">
+                  {/* ✅ زرار التعديل */}
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="flex-1 md:flex-none"
+                    onClick={() => router.push(`/courses/manage/${courseId}/sections/${section._id}/edit`)}
+                  >
+                    <Edit size={16} className="mr-1" /> Edit
+                  </Button>
+
+                  {/* ✅ زرار المسح */}
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="text-red-500 hover:bg-red-50"
+                    onClick={() => handleDeleteSection(section._id)}
+                  >
                     <Trash2 size={16} />
                   </Button>
                 </div>

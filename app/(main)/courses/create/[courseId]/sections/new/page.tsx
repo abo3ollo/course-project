@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Video, ArrowLeft } from "lucide-react";
+import { Video, ArrowLeft, UploadCloud } from "lucide-react"; // ✅ ضفنا UploadCloud
 import { toast } from "sonner";
 import api from "@/lib/axios";
 
@@ -16,6 +16,7 @@ export default function AddSectionPage() {
   const courseId = params.courseId as string;
 
   const [isLoading, setIsLoading] = useState(false);
+  const [videoFile, setVideoFile] = useState<File | null>(null); // ✅ ستيت للفيديو
   const [formData, setFormData] = useState({
     title: "",
     learningObjective: "",
@@ -34,9 +35,21 @@ export default function AddSectionPage() {
 
     setIsLoading(true);
     try {
-      await api.post(`/courses/${courseId}/sections`, {
-        ...formData,
-        lessons: []
+      // ✅ بنستخدم FormData عشان نبعت الفيديو
+      const data = new FormData();
+      data.append("title", formData.title);
+      data.append("learningObjective", formData.learningObjective);
+      data.append("introVideoTitle", formData.introVideoTitle);
+      data.append("duration", formData.duration);
+      data.append("isFreePreview", String(formData.isFreePreview));
+      data.append("isDraft", String(formData.isDraft));
+      
+      if (videoFile) {
+        data.append("video", videoFile); // 👈 مهم جداً
+      }
+
+      await api.post(`/courses/${courseId}/sections`, data, {
+        headers: { "Content-Type": "multipart/form-data" },
       });
 
       toast.success("Section added successfully!");
@@ -98,10 +111,6 @@ export default function AddSectionPage() {
               <h4 className="font-bold text-gray-900">Section Overview Video / Intro Lecture Video</h4>
               <p className="text-sm text-gray-500 mt-1">Attach an introductory clip or first lecture for this chapter.</p>
             </div>
-            <div className="flex bg-gray-200 p-1 rounded-md shrink-0">
-              <button type="button" className="px-4 py-1.5 text-xs font-medium bg-white shadow-sm rounded">Upload File</button>
-              <button type="button" className="px-4 py-1.5 text-xs font-medium text-gray-500">Embed URL</button>
-            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
@@ -125,13 +134,22 @@ export default function AddSectionPage() {
             </div>
           </div>
 
-          <div className="border-2 border-dashed rounded-xl p-10 flex flex-col items-center justify-center bg-white cursor-pointer hover:bg-gray-50 transition">
+          {/* ✅ الفيديو بقى شغال ومربوط بالـ Input */}
+          <label className="border-2 border-dashed rounded-xl p-10 flex flex-col items-center justify-center bg-white cursor-pointer hover:bg-gray-50 transition">
             <div className="bg-indigo-50 p-4 rounded-full mb-4">
-              <Video className="w-8 h-8 text-indigo-600" />
+              <UploadCloud className="w-8 h-8 text-indigo-600" />
             </div>
-            <p className="text-base font-semibold text-indigo-600">Click to upload video file or drag and drop</p>
-            <p className="text-sm text-gray-500 mt-2">MP4, MOV, or WebM up to 2GB (1080p / 4K recommended)</p>
-          </div>
+            <p className="text-base font-semibold text-indigo-600">
+              {videoFile ? videoFile.name : "Click to upload video file or drag and drop"}
+            </p>
+            <p className="text-sm text-gray-500 mt-2">MP4, MOV, or WebM up to 100MB</p>
+            <input 
+              type="file" 
+              className="hidden" 
+              accept="video/*" 
+              onChange={(e) => setVideoFile(e.target.files?.[0] || null)} 
+            />
+          </label>
         </div>
 
         {/* Access & Visibility */}

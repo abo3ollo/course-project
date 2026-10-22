@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import api from "@/lib/axios";
 import { Course } from "@/src/types";
-import { Clock, Globe, ShieldCheck, PlayCircle, BookOpen } from "lucide-react"; // ✅ ضفنا PlayCircle و BookOpen
+import { Clock, Globe, ShieldCheck, PlayCircle, BookOpen, Lock } from "lucide-react"; 
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useAuth } from "@/src/context/AuthContext";
@@ -18,6 +18,7 @@ export default function CourseDetailsPage() {
   const { isAuthenticated, user } = useAuth();
 
   const [course, setCourse] = useState<Course | null>(null);
+  const [isAuthorized, setIsAuthorized] = useState(false); // ✅ ستيت جديدة
   const [isLoading, setIsLoading] = useState(true);
   const [isEnrolling, setIsEnrolling] = useState(false);
 
@@ -26,6 +27,7 @@ export default function CourseDetailsPage() {
       try {
         const res = await api.get(`/courses/${id}`);
         setCourse(res.data.data.course);
+        setIsAuthorized(res.data.data.isAuthorized); // ✅ بناخد الصلاحية من الباك إند
       } catch (err) {
         console.error("Failed to fetch course", err);
       } finally {
@@ -47,7 +49,7 @@ export default function CourseDetailsPage() {
     try {
       await api.post(`/courses/${id}/enroll`);
       toast.success("Enrolled successfully!");
-      router.push("/my-courses");
+      router.push(`/courses/${id}/learn`); // ✅ بنوجهه لصفحة المشاهدة مباشرة
     } catch (err: any) {
       toast.error(err?.response?.data?.message || "Failed to enroll");
     } finally {
@@ -81,7 +83,7 @@ export default function CourseDetailsPage() {
       {/* ── Hero Section (الجزء الأسود) ── */}
       <div className="bg-gray-900 text-white py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-3 gap-10">
-          
+
           {/* بيانات الكورس */}
           <div className="lg:col-span-2 space-y-6">
             <div className="flex items-center gap-3 text-sm font-medium text-indigo-400">
@@ -89,11 +91,11 @@ export default function CourseDetailsPage() {
               <span>•</span>
               <span>{course.level}</span>
             </div>
-            
+
             <h1 className="text-4xl md:text-5xl font-extrabold leading-tight">
               {course.title}
             </h1>
-            
+
             <p className="text-lg text-gray-300">{course.description}</p>
 
             <div className="flex items-center gap-4 pt-4">
@@ -126,13 +128,27 @@ export default function CourseDetailsPage() {
                 {course.price === 0 ? "Free" : `$${course.price}`}
               </div>
 
+              {/* ✅ منطق الزرار */}
               {isInstructor ? (
                 <div className="space-y-3 mb-6">
-                  <Button className="w-full bg-gray-900 hover:bg-black text-white h-12 text-lg rounded-xl">
-                    Edit Course
-                  </Button>
+                  <Link href={`/courses/edit/${course._id}`}>
+                    <Button className="w-full bg-gray-900 hover:bg-black text-white h-12 text-lg rounded-xl">
+                      Edit Course
+                    </Button>
+                  </Link>
                   <p className="text-xs text-center text-gray-500">
                     You are the instructor of this course.
+                  </p>
+                </div>
+              ) : isAuthorized ? (
+                <div className="space-y-3 mb-6">
+                  <Link href={`/courses/${course._id}/learn`}>
+                    <Button className="w-full bg-green-600 hover:bg-green-700 text-white h-12 text-lg rounded-xl">
+                      Continue Learning
+                    </Button>
+                  </Link>
+                  <p className="text-xs text-center text-gray-500">
+                    You are already enrolled in this course.
                   </p>
                 </div>
               ) : (
@@ -172,7 +188,7 @@ export default function CourseDetailsPage() {
       {/* ── Course Content Section (الجزء الأبيض تحت) ── */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-          
+
           <div className="lg:col-span-2">
             <div className="flex items-center gap-3 mb-6">
               <BookOpen className="text-indigo-600" size={28} />
@@ -189,7 +205,7 @@ export default function CourseDetailsPage() {
                           Section {index + 1}: {section.title}
                         </h3>
                         <p className="text-sm text-gray-500 mt-1">
-                          {section.lessons?.length || 0} lectures • {section.duration || "0 min"}
+                          • {section.duration || "0 min"}
                         </p>
                       </div>
                       {section.isFreePreview && (
@@ -197,19 +213,24 @@ export default function CourseDetailsPage() {
                       )}
                     </div>
 
-                    <div className="divide-y divide-gray-100">
-                      {section.lessons && section.lessons.length > 0 ? (
-                        section.lessons.map((lesson, lIndex) => (
-                          <div key={lIndex} className="p-4 px-6 flex items-center gap-4 hover:bg-gray-50 cursor-pointer transition">
-                            <PlayCircle className="w-5 h-5 text-indigo-500" />
-                            <span className="text-sm font-medium text-gray-700">{lesson.title}</span>
-                            <span className="text-xs text-gray-400 ml-auto">{lesson.duration}</span>
-                          </div>
-                        ))
-                      ) : (
-                        <div className="p-6 text-sm text-gray-500 italic">No lessons added yet.</div>
-                      )}
-                    </div>
+                    {/* ✅ لو الفيديو موجود، بنعرضه. لو مش موجود (مخفي)، بنعرض قفل */}
+                    {section.videoUrl ? (
+                      <div className="p-6 bg-black aspect-video">
+                        <video
+                          src={section.videoUrl}
+                          controls
+                          className="w-full h-full"
+                        >
+                          Your browser does not support the video tag.
+                        </video>
+                      </div>
+                    ) : (
+                      <div className="p-8 bg-gray-100 flex flex-col items-center justify-center text-gray-400 border-t border-gray-200">
+                        <Lock size={32} className="mb-2" />
+                        <p className="text-sm font-medium">Enroll to unlock this video</p>
+                      </div>
+                    )}
+
                   </div>
                 ))}
               </div>
