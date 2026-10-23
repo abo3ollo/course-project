@@ -3,8 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import api from "@/lib/axios";
-
-import { BookOpen, Tag, User } from "lucide-react";
+import { BookOpen, Tag } from "lucide-react";
 import { Course } from "@/src/types";
 import { useAuth } from "@/src/context/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -18,7 +17,6 @@ export default function CoursesPage() {
     const fetchCourses = async () => {
       try {
         const res = await api.get("/courses");
-        // بنفلتر الكورسات عشان نعرض بس اللي اتنشرت (isPublished: true)
         const publishedCourses = res.data.data.courses.filter(
           (course: Course) => course.isPublished
         );
@@ -35,97 +33,100 @@ export default function CoursesPage() {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center min-h-[60vh]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+      <div className="min-h-screen bg-obsidian flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-copper"></div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between mb-10 gap-4">
-        <div className="text-center md:text-left">
-          <h1 className="text-3xl font-bold text-gray-900">Browse Catalog</h1>
-          <p className="text-gray-500 mt-2">
-            Discover new skills and expand your knowledge with our top-rated courses.
-          </p>
+    <div className="min-h-screen bg-obsidian text-bone font-sans pb-20">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        
+        {/* Header */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6 border-b border-graphite pb-8">
+          <div className="text-center md:text-left">
+            <h1 className="font-serif text-4xl text-white">Browse Catalog</h1>
+            <p className="text-fog mt-3 max-w-xl">
+              Discover new skills and expand your knowledge with our top-rated courses.
+            </p>
+          </div>
+
+          {(user?.role === "INSTRUCTOR" || user?.role === "ADMIN") && (
+            <Link href="/courses/create">
+              <Button className="bg-white text-black hover:bg-gray-200 rounded-full font-medium px-6 w-full md:w-auto">
+                + Create Course
+              </Button>
+            </Link>
+          )}
         </div>
 
-        {(user?.role === "INSTRUCTOR" || user?.role === "ADMIN") && (
-          <Link href="/courses/create">
-            <Button className="bg-indigo-600 hover:bg-indigo-700 w-full md:w-auto">
-              + Create Course
-            </Button>
-          </Link>
+        {courses.length === 0 ? (
+          <div className="text-center py-24 bg-onyx rounded-[10px] border border-graphite">
+            <BookOpen className="mx-auto h-12 w-12 text-[#2e3038] mb-4" />
+            <h3 className="text-lg font-medium text-white">No courses available</h3>
+            <p className="text-fog mt-1">Check back later for new content.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {courses.map((course) => (
+              <Link
+                key={course._id}
+                href={`/courses/${course._id}`}
+                className="group flex flex-col bg-onyx rounded-[10px] border border-graphite overflow-hidden hover:border-[#2e3038] transition-all duration-300"
+              >
+                {/* Thumbnail */}
+                <div className="relative h-48 w-full overflow-hidden">
+                  <img
+                    src={course.thumbnail}
+                    alt={course.title}
+                    className="w-full h-full object-cover opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500"
+                  />
+                  <div className="absolute top-3 right-3 bg-carbon/90 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-medium text-copper border border-[#2e3038]">
+                    ${course.price}
+                  </div>
+                </div>
+
+                {/* Content */}
+                <div className="p-6 flex flex-col grow">
+                  <div className="flex items-center gap-2 text-xs font-semibold text-copper mb-3 tracking-wider uppercase">
+                    <Tag size={12} />
+                    <span>{course.category}</span>
+                    <span className="text-[#464853]">•</span>
+                    <span>{course.level}</span>
+                  </div>
+
+                  <h2 className="font-serif text-xl text-white mb-3 line-clamp-2 leading-snug group-hover:text-copper transition-colors">
+                    {course.title}
+                  </h2>
+
+                  <p className="text-sm text-fog line-clamp-2 mb-6 grow">
+                    {course.description}
+                  </p>
+
+                  {/* Instructor */}
+                  <div className="flex items-center gap-3 mt-auto pt-5 border-t border-graphite">
+                    {course.instructor?.avatar ? (
+                      <img
+                        src={course.instructor.avatar}
+                        alt="Instructor"
+                        className="w-7 h-7 rounded-full object-cover border border-[#2e3038]"
+                      />
+                    ) : (
+                      <div className="w-7 h-7 rounded-full bg-graphite text-copper flex items-center justify-center text-xs font-bold border border-[#2e3038]">
+                        {course.instructor?.firstName?.charAt(0)}
+                      </div>
+                    )}
+                    <span className="text-sm text-bone">
+                      {course.instructor?.firstName} {course.instructor?.lastName}
+                    </span>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
         )}
       </div>
-
-      {courses.length === 0 ? (
-        <div className="text-center py-20 bg-gray-50 rounded-2xl border border-dashed">
-          <BookOpen className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-          <h3 className="text-lg font-medium text-gray-900">No courses available</h3>
-          <p className="text-gray-500 mt-1">Check back later for new content.</p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {courses.map((course) => (
-            <Link
-              key={course._id}
-              href={`/courses/${course._id}`}
-              className="group flex flex-col bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-300"
-            >
-              {/* Thumbnail */}
-              <div className="relative h-48 w-full bg-gray-200 overflow-hidden">
-                <img
-                  src={course.thumbnail}
-                  alt={course.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-                <div className="absolute top-3 right-3 bg-white/95 backdrop-blur-sm px-2.5 py-1 rounded-md text-sm font-bold text-gray-900 shadow-sm">
-                  ${course.price}
-                </div>
-              </div>
-
-              {/* Content */}
-              <div className="p-5 flex flex-col grow">
-                <div className="flex items-center gap-2 text-xs font-semibold text-indigo-600 mb-3">
-                  <Tag size={14} />
-                  <span>{course.category}</span>
-                  <span className="text-gray-300">•</span>
-                  <span>{course.level}</span>
-                </div>
-
-                <h2 className="text-lg font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-indigo-600 transition-colors">
-                  {course.title}
-                </h2>
-
-                <p className="text-sm text-gray-500 line-clamp-2 mb-4 grow">
-                  {course.description}
-                </p>
-
-                {/* Instructor */}
-                <div className="flex items-center gap-2 mt-auto pt-4 border-t border-gray-50">
-                  {course.instructor?.avatar ? (
-                    <img
-                      src={course.instructor.avatar}
-                      alt="Instructor"
-                      className="w-7 h-7 rounded-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-7 h-7 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-xs font-bold">
-                      {course.instructor?.firstName?.charAt(0)}
-                    </div>
-                  )}
-                  <span className="text-sm font-medium text-gray-700">
-                    {course.instructor?.firstName} {course.instructor?.lastName}
-                  </span>
-                </div>
-              </div>
-            </Link>
-          ))}
-        </div>
-      )}
     </div>
   );
 }

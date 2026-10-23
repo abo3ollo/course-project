@@ -29,10 +29,7 @@ export default function ProfilePage() {
   // --- Profile Form ---
   const profileForm = useForm<UpdateProfileSchemaType>({
     resolver: zodResolver(updateProfileSchema),
-    defaultValues: { 
-    firstName:"" ,
-    lastName:""
-  },
+    defaultValues: { firstName: "", lastName: "" },
   });
 
   useEffect(() => {
@@ -101,38 +98,47 @@ export default function ProfilePage() {
     }
   }
 
-  if (isAuthLoading) return <div className="text-center py-20">Loading...</div>;
+  if (isAuthLoading) {
+    return (
+      <div className="min-h-screen bg-obsidian flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-copper"></div>
+      </div>
+    );
+  }
+  
   if (!isAuthenticated) return null;
 
   return (
-    <div className="min-h-screen bg-gray-50 py-10 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-5xl mx-auto space-y-8">
+    <div className="min-h-screen bg-obsidian text-bone font-sans pb-20 selection:bg-copper selection:text-white">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-10">
 
         {/* Header */}
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Account Settings</h1>
-          <p className="text-gray-500 mt-2">Manage your profile details, avatar credentials, and account security preferences.</p>
+        <div className="border-b border-graphite pb-8">
+          <h1 className="font-serif text-4xl text-white">Account Settings</h1>
+          <p className="text-fog mt-2 max-w-2xl">
+            Manage your profile details, avatar credentials, and account security preferences.
+          </p>
         </div>
 
         {/* Tabs */}
-        <div className="border-b border-gray-200">
+        <div className="border-b border-graphite">
           <nav className="flex gap-8">
-            <button className="pb-4 border-b-2 border-indigo-600 text-indigo-600 font-medium">General Profile</button>
-            <button className="pb-4 text-gray-500 hover:text-gray-900 font-medium">Security & Password</button>
-            <button className="pb-4 text-gray-500 hover:text-gray-900 font-medium">Notifications</button>
-            <button className="pb-4 text-gray-500 hover:text-gray-900 font-medium">Billing & Certificates</button>
+            <button className="pb-4 border-b-2 border-copper text-copper font-medium">General Profile</button>
+            <button className="pb-4 text-fog hover:text-white font-medium transition-colors">Security & Password</button>
+            <button className="pb-4 text-fog hover:text-white font-medium transition-colors">Notifications</button>
+            <button className="pb-4 text-fog hover:text-white font-medium transition-colors">Billing & Certificates</button>
           </nav>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
 
           {/* Left Column (Profile Info) */}
           <div className="lg:col-span-2 space-y-8">
 
             {/* Avatar Card */}
-            <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
-              <h2 className="text-xl font-semibold text-gray-900 mb-1">Profile Picture</h2>
-              <p className="text-sm text-gray-500 mb-6">This image will appear across your enrolled courses, certificates, and forum interactions.</p>
+            <div className="bg-onyx p-8 rounded-[10px] border border-graphite">
+              <h2 className="font-serif text-2xl text-white mb-1">Profile Picture</h2>
+              <p className="text-sm text-fog mb-6">This image will appear across your enrolled courses, certificates, and forum interactions.</p>
 
               <div className="flex items-center gap-6">
                 <div className="relative">
@@ -140,44 +146,43 @@ export default function ProfilePage() {
                     <img
                       src={user.avatar}
                       alt="Avatar"
-                      className="w-7 h-7 rounded-full object-cover"
+                      className="w-24 h-24 rounded-full object-cover border-2 border-graphite"
                       onError={(e) => {
-                        // لو الصورة اتكسرت، نخفيها ونظهر أول حرف
                         e.currentTarget.style.display = 'none';
                         e.currentTarget.nextElementSibling?.classList.remove('hidden');
                       }}
                     />
                   ) : null}
-                  {/* Fallback (يظهر لو مفيش صورة أو لو الصورة اتكسرت) */}
-                  <div className={`w-7 h-7 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-xs ${user?.avatar && !user.avatar.includes('default-avatar') ? 'hidden' : ''}`}>
+                  {/* Fallback */}
+                  <div className={`w-24 h-24 rounded-full bg-carbon text-copper flex items-center justify-center font-serif text-3xl border-2 border-graphite ${user?.avatar && !user.avatar.includes('default-avatar') ? 'hidden' : ''}`}>
                     {user?.firstName?.charAt(0).toUpperCase()}
                   </div>
-                  <label className="absolute bottom-0 right-0 bg-indigo-600 text-white p-2 rounded-full cursor-pointer hover:bg-indigo-700 transition shadow-lg">
-                    <Camera size={16} />
+                  <label className="absolute bottom-0 right-0 bg-copper text-white p-2.5 rounded-full cursor-pointer hover:bg-copper/90 transition shadow-lg border border-obsidian">
+                    <Camera size={18} />
                     <input type="file" className="hidden" accept="image/*" onChange={handleAvatarUpload} disabled={isUploadingAvatar} />
                   </label>
                 </div>
                 <div>
-                  <div className="flex gap-3 mb-2">
-                    <label className="cursor-pointer bg-black text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-800 transition">
+                  <div className="flex gap-3 mb-3">
+                    <label className="cursor-pointer bg-white text-black px-5 py-2.5 rounded-full text-sm font-medium hover:bg-gray-200 transition">
                       {isUploadingAvatar ? "Uploading..." : "Change Avatar"}
                       <input type="file" className="hidden" accept="image/*" onChange={handleAvatarUpload} disabled={isUploadingAvatar} />
                     </label>
-                    <Button variant="outline" className="rounded-lg text-sm">Remove</Button>
+                    <Button variant="outline" className="rounded-full text-sm border-graphite text-fog hover:text-white hover:bg-carbon">Remove</Button>
                   </div>
-                  <p className="text-xs text-gray-500">Recommended: JPG, GIF or PNG. Max size: 5MB.</p>
+                  <p className="text-xs text-steel">Recommended: JPG, GIF or PNG. Max size: 5MB.</p>
                 </div>
               </div>
             </div>
 
             {/* Personal Info Card */}
-            <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
-              <div className="flex justify-between items-start mb-6">
+            <div className="bg-onyx p-8 rounded-[10px] border border-graphite">
+              <div className="flex justify-between items-start mb-6 border-b border-graphite pb-4">
                 <div>
-                  <h2 className="text-xl font-semibold text-gray-900 mb-1">Personal Information</h2>
-                  <p className="text-sm text-gray-500">Update your personal details and public learning identity.</p>
+                  <h2 className="font-serif text-2xl text-white mb-1">Personal Information</h2>
+                  <p className="text-sm text-fog">Update your personal details and public learning identity.</p>
                 </div>
-                <span className="bg-green-50 text-green-700 px-3 py-1 rounded-full text-xs font-medium border border-green-200">
+                <span className={`px-3 py-1 rounded-full text-xs font-medium border ${user?.isVerified ? 'bg-copper/10 text-copper border-copper/30' : 'bg-red-400/10 text-red-400 border-red-400/30'}`}>
                   {user?.isVerified ? "Verified Student" : "Unverified"}
                 </span>
               </div>
@@ -190,8 +195,8 @@ export default function ProfilePage() {
                       control={profileForm.control}
                       render={({ field, fieldState }) => (
                         <Field data-invalid={fieldState.invalid}>
-                          <FieldLabel className="text-gray-700">First Name</FieldLabel>
-                          <Input {...field} className="bg-gray-50 border-gray-200 focus:bg-white" />
+                          <FieldLabel className="text-bone">First Name</FieldLabel>
+                          <Input {...field} className="bg-carbon border-graphite text-white focus-visible:ring-copper" />
                           {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                         </Field>
                       )}
@@ -203,8 +208,8 @@ export default function ProfilePage() {
                       control={profileForm.control}
                       render={({ field, fieldState }) => (
                         <Field data-invalid={fieldState.invalid}>
-                          <FieldLabel className="text-gray-700">Last Name</FieldLabel>
-                          <Input {...field} className="bg-gray-50 border-gray-200 focus:bg-white" />
+                          <FieldLabel className="text-bone">Last Name</FieldLabel>
+                          <Input {...field} className="bg-carbon border-graphite text-white focus-visible:ring-copper" />
                           {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                         </Field>
                       )}
@@ -213,13 +218,13 @@ export default function ProfilePage() {
                 </div>
 
                 <FieldGroup>
-                  <FieldLabel className="text-gray-700">Email Address</FieldLabel>
-                  <Input value={user?.email || ""} disabled className="bg-gray-100 border-gray-200 text-gray-500" />
+                  <FieldLabel className="text-bone">Email Address</FieldLabel>
+                  <Input value={user?.email || ""} disabled className="bg-carbon/50 border-graphite text-fog cursor-not-allowed" />
                 </FieldGroup>
 
-                <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
-                  <Button type="button" variant="ghost" className="rounded-lg">Cancel</Button>
-                  <Button type="submit" disabled={isUpdatingProfile} className="bg-black text-white rounded-lg">
+                <div className="flex justify-end gap-3 pt-6 mt-6 border-t border-graphite">
+                  <Button type="button" variant="ghost" className="rounded-full text-fog hover:text-white">Cancel</Button>
+                  <Button type="submit" disabled={isUpdatingProfile} className="bg-white text-black hover:bg-gray-200 rounded-full font-medium px-6">
                     {isUpdatingProfile ? "Updating..." : "Update Profile"}
                   </Button>
                 </div>
@@ -228,17 +233,17 @@ export default function ProfilePage() {
           </div>
 
           {/* Right Column (Security) */}
-          <div className="lg:col-span-1 space-y-6">
+          <div className="lg:col-span-1 space-y-8">
 
             {/* Change Password Card */}
-            <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
-              <div className="flex items-start gap-3 mb-6">
-                <div className="bg-red-50 text-red-500 p-2 rounded-full">
+            <div className="bg-onyx p-8 rounded-[10px] border border-graphite">
+              <div className="flex items-start gap-4 mb-6 border-b border-graphite pb-4">
+                <div className="bg-red-400/10 text-red-400 p-2.5 rounded-full border border-red-400/20">
                   <Lock size={20} />
                 </div>
                 <div>
-                  <h2 className="text-lg font-semibold text-gray-900">Change Password</h2>
-                  <p className="text-xs text-gray-500 mt-1">Ensure your account is protected with a secure password.</p>
+                  <h2 className="font-serif text-xl text-white">Change Password</h2>
+                  <p className="text-xs text-fog mt-1">Ensure your account is protected with a secure password.</p>
                 </div>
               </div>
 
@@ -249,8 +254,8 @@ export default function ProfilePage() {
                     control={passwordForm.control}
                     render={({ field, fieldState }) => (
                       <Field data-invalid={fieldState.invalid}>
-                        <FieldLabel className="text-gray-700 text-sm">Current Password</FieldLabel>
-                        <Input type="password" {...field} className="bg-gray-50 border-gray-200" />
+                        <FieldLabel className="text-bone text-sm">Current Password</FieldLabel>
+                        <Input type="password" {...field} className="bg-carbon border-graphite text-white focus-visible:ring-copper" />
                         {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                       </Field>
                     )}
@@ -262,8 +267,8 @@ export default function ProfilePage() {
                     control={passwordForm.control}
                     render={({ field, fieldState }) => (
                       <Field data-invalid={fieldState.invalid}>
-                        <FieldLabel className="text-gray-700 text-sm">New Password</FieldLabel>
-                        <Input type="password" {...field} className="bg-gray-50 border-gray-200" placeholder="At least 8 characters" />
+                        <FieldLabel className="text-bone text-sm">New Password</FieldLabel>
+                        <Input type="password" {...field} className="bg-carbon border-graphite text-white focus-visible:ring-copper" placeholder="At least 8 characters" />
                         {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                       </Field>
                     )}
@@ -275,15 +280,15 @@ export default function ProfilePage() {
                     control={passwordForm.control}
                     render={({ field, fieldState }) => (
                       <Field data-invalid={fieldState.invalid}>
-                        <FieldLabel className="text-gray-700 text-sm">Confirm New Password</FieldLabel>
-                        <Input type="password" {...field} className="bg-gray-50 border-gray-200" placeholder="Repeat new password" />
+                        <FieldLabel className="text-bone text-sm">Confirm New Password</FieldLabel>
+                        <Input type="password" {...field} className="bg-carbon border-graphite text-white focus-visible:ring-copper" placeholder="Repeat new password" />
                         {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                       </Field>
                     )}
                   />
                 </FieldGroup>
 
-                <Button type="submit" disabled={isChangingPassword} className="w-full bg-rose-600 hover:bg-rose-700 text-white rounded-lg mt-2">
+                <Button type="submit" disabled={isChangingPassword} className="w-full bg-white text-black hover:bg-gray-200 rounded-full font-medium mt-4">
                   <Lock size={16} className="mr-2" />
                   {isChangingPassword ? "Changing..." : "Change Password"}
                 </Button>
@@ -291,14 +296,16 @@ export default function ProfilePage() {
             </div>
 
             {/* 2FA Card (Mockup) */}
-            <div className="bg-gray-50 p-6 rounded-2xl border border-gray-200 flex gap-4">
-              <div className="bg-indigo-100 text-indigo-600 p-2 rounded-full h-fit">
+            <div className="bg-carbon p-6 rounded-[10px] border border-graphite flex gap-4">
+              <div className="bg-graphite text-copper p-2.5 rounded-full h-fit border border-slate">
                 <ShieldCheck size={20} />
               </div>
               <div>
-                <h3 className="font-medium text-gray-900 text-sm">Two-Factor Authentication (2FA)</h3>
-                <p className="text-xs text-gray-500 mt-1 mb-2">Add an extra layer of protection to your account with authenticator apps.</p>
-                <button className="text-sm text-indigo-600 font-medium hover:underline">Configure 2FA &rarr;</button>
+                <h3 className="font-serif text-lg text-white mb-1">Two-Factor Authentication</h3>
+                <p className="text-xs text-fog mb-3 leading-relaxed">Add an extra layer of protection to your account with authenticator apps.</p>
+                <button className="text-sm text-copper font-medium hover:underline flex items-center gap-1">
+                  Configure 2FA &rarr;
+                </button>
               </div>
             </div>
 

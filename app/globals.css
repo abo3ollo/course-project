@@ -46,6 +46,16 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+  --color-obsidian: #08080a;
+  --color-onyx: #040406;
+  --color-carbon: #121317;
+  --color-graphite: #1c1d22;
+  --color-copper: #cc9166;
+  --color-bone: #e2e3e9;
+  --color-fog: #9194a1;
+  
+  --font-inter: 'Inter', sans-serif;
+  --font-ivy-presto: 'Playfair Display', serif; /* بديل لـ Ivy Presto */
 }
 
 :root {

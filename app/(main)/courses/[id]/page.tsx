@@ -18,7 +18,7 @@ export default function CourseDetailsPage() {
   const { isAuthenticated, user } = useAuth();
 
   const [course, setCourse] = useState<Course | null>(null);
-  const [isAuthorized, setIsAuthorized] = useState(false); // ✅ ستيت جديدة
+  const [isAuthorized, setIsAuthorized] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isEnrolling, setIsEnrolling] = useState(false);
 
@@ -27,7 +27,7 @@ export default function CourseDetailsPage() {
       try {
         const res = await api.get(`/courses/${id}`);
         setCourse(res.data.data.course);
-        setIsAuthorized(res.data.data.isAuthorized); // ✅ بناخد الصلاحية من الباك إند
+        setIsAuthorized(res.data.data.isAuthorized);
       } catch (err) {
         console.error("Failed to fetch course", err);
       } finally {
@@ -49,7 +49,7 @@ export default function CourseDetailsPage() {
     try {
       await api.post(`/courses/${id}/enroll`);
       toast.success("Enrolled successfully!");
-      router.push(`/courses/${id}/learn`); // ✅ بنوجهه لصفحة المشاهدة مباشرة
+      router.push(`/courses/${id}/learn`);
     } catch (err: any) {
       toast.error(err?.response?.data?.message || "Failed to enroll");
     } finally {
@@ -59,17 +59,17 @@ export default function CourseDetailsPage() {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center min-h-[60vh]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+      <div className="min-h-screen bg-obsidian flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-copper"></div>
       </div>
     );
   }
 
   if (!course) {
     return (
-      <div className="text-center py-20">
-        <h2 className="text-2xl font-bold text-gray-900">Course not found</h2>
-        <Link href="/courses" className="text-indigo-600 hover:underline mt-4 inline-block">
+      <div className="min-h-screen bg-obsidian text-bone flex flex-col items-center justify-center">
+        <h2 className="font-serif text-3xl text-white mb-4">Course not found</h2>
+        <Link href="/courses" className="text-copper hover:underline mt-2">
           Back to Catalog
         </Link>
       </div>
@@ -79,75 +79,78 @@ export default function CourseDetailsPage() {
   const isInstructor = user?._id === course?.instructor?._id;
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
-      {/* ── Hero Section (الجزء الأسود) ── */}
-      <div className="bg-gray-900 text-white py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-3 gap-10">
+    <div className="min-h-screen bg-obsidian text-bone font-sans pb-20 selection:bg-copper selection:text-white">
+      
+      {/* ── Hero Section ── */}
+      <div className="bg-onyx border-b border-graphite py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-3 gap-12">
 
-          {/* بيانات الكورس */}
-          <div className="lg:col-span-2 space-y-6">
-            <div className="flex items-center gap-3 text-sm font-medium text-indigo-400">
+          {/* Course Info (Left) */}
+          <div className="lg:col-span-2 space-y-6 pt-4">
+            <div className="flex items-center gap-3 text-sm font-medium text-copper uppercase tracking-wider">
               <span>{course.category}</span>
               <span>•</span>
               <span>{course.level}</span>
             </div>
 
-            <h1 className="text-4xl md:text-5xl font-extrabold leading-tight">
+            <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl text-white leading-tight">
               {course.title}
             </h1>
 
-            <p className="text-lg text-gray-300">{course.description}</p>
+            <p className="text-lg text-fog leading-relaxed max-w-3xl">
+              {course.description}
+            </p>
 
-            <div className="flex items-center gap-4 pt-4">
+            <div className="flex items-center gap-4 pt-6">
               {course.instructor?.avatar ? (
-                <img src={course.instructor.avatar} className="w-12 h-12 rounded-full border-2 border-indigo-500 object-cover" alt="instructor" />
+                <img src={course.instructor.avatar} className="w-12 h-12 rounded-full border border-graphite object-cover" alt="instructor" />
               ) : (
-                <div className="w-12 h-12 rounded-full bg-indigo-600 flex items-center justify-center text-xl font-bold">
+                <div className="w-12 h-12 rounded-full bg-carbon border border-graphite flex items-center justify-center font-serif text-xl text-copper">
                   {course.instructor?.firstName?.charAt(0)}
                 </div>
               )}
               <div>
-                <p className="text-sm text-gray-400">Created by</p>
-                <p className="font-semibold text-white">
+                <p className="text-sm text-steel">Created by</p>
+                <p className="font-medium text-white">
                   {course.instructor?.firstName} {course.instructor?.lastName}
                 </p>
               </div>
             </div>
           </div>
 
-          {/* الكارت بتاع الشراء / التسجيل (يمين) */}
+          {/* Enrollment Card (Right) */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-2xl shadow-xl p-6 text-gray-900 sticky top-24">
+            <div className="bg-onyx border border-graphite rounded-[10px] p-6 sticky top-24">
               <img
                 src={course.thumbnail}
                 alt={course.title}
-                className="w-full h-48 object-cover rounded-xl mb-6"
+                className="w-full h-48 object-cover rounded-md mb-6 border border-graphite"
               />
 
-              <div className="text-4xl font-bold mb-6">
+              <div className="font-serif text-4xl text-white mb-6">
                 {course.price === 0 ? "Free" : `$${course.price}`}
               </div>
 
-              {/* ✅ منطق الزرار */}
+              {/* Action Buttons */}
               {isInstructor ? (
                 <div className="space-y-3 mb-6">
                   <Link href={`/courses/edit/${course._id}`}>
-                    <Button className="w-full bg-gray-900 hover:bg-black text-white h-12 text-lg rounded-xl">
+                    <Button className="w-full bg-white text-black hover:bg-gray-200 h-12 text-lg rounded-full font-medium">
                       Edit Course
                     </Button>
                   </Link>
-                  <p className="text-xs text-center text-gray-500">
+                  <p className="text-xs text-center text-steel">
                     You are the instructor of this course.
                   </p>
                 </div>
               ) : isAuthorized ? (
                 <div className="space-y-3 mb-6">
                   <Link href={`/courses/${course._id}/learn`}>
-                    <Button className="w-full bg-green-600 hover:bg-green-700 text-white h-12 text-lg rounded-xl">
+                    <Button className="w-full bg-copper hover:bg-copper/90 text-white h-12 text-lg rounded-full font-medium transition-colors">
                       Continue Learning
                     </Button>
                   </Link>
-                  <p className="text-xs text-center text-gray-500">
+                  <p className="text-xs text-center text-steel">
                     You are already enrolled in this course.
                   </p>
                 </div>
@@ -156,27 +159,28 @@ export default function CourseDetailsPage() {
                   <Button
                     onClick={handleEnroll}
                     disabled={isEnrolling}
-                    className="w-full bg-indigo-600 hover:bg-indigo-700 text-white h-12 text-lg rounded-xl mb-4"
+                    className="w-full bg-white text-black hover:bg-gray-200 h-12 text-lg rounded-full font-medium mb-4 transition-colors"
                   >
                     {isEnrolling ? "Enrolling..." : "Enroll Now"}
                   </Button>
-                  <p className="text-xs text-center text-gray-500 mb-6">
+                  <p className="text-xs text-center text-steel mb-6">
                     30-Day Money-Back Guarantee
                   </p>
                 </>
               )}
 
-              <div className="space-y-3 text-sm text-gray-600 mt-6 pt-6 border-t border-gray-100">
+              {/* Features List */}
+              <div className="space-y-4 text-sm text-fog mt-8 pt-6 border-t border-graphite">
                 <div className="flex items-center gap-3">
-                  <Clock size={16} className="text-indigo-600" />
+                  <Clock size={16} className="text-copper" />
                   <span>Full lifetime access</span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <Globe size={16} className="text-indigo-600" />
+                  <Globe size={16} className="text-copper" />
                   <span>Access on mobile and TV</span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <ShieldCheck size={16} className="text-indigo-600" />
+                  <ShieldCheck size={16} className="text-copper" />
                   <span>Certificate of completion</span>
                 </div>
               </div>
@@ -185,37 +189,41 @@ export default function CourseDetailsPage() {
         </div>
       </div>
 
-      {/* ── Course Content Section (الجزء الأبيض تحت) ── */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+      {/* ── Course Curriculum Section ── */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
 
           <div className="lg:col-span-2">
-            <div className="flex items-center gap-3 mb-6">
-              <BookOpen className="text-indigo-600" size={28} />
-              <h2 className="text-2xl font-bold text-gray-900">Course Curriculum</h2>
+            <div className="flex items-center gap-3 mb-8 border-b border-graphite pb-4">
+              <BookOpen className="text-copper" size={28} />
+              <h2 className="font-serif text-3xl text-white">Course Curriculum</h2>
             </div>
 
             {course.sections && course.sections.length > 0 ? (
               <div className="space-y-4">
                 {course.sections.map((section, index) => (
-                  <div key={index} className="border border-gray-200 rounded-xl bg-white overflow-hidden shadow-sm">
-                    <div className="p-5 bg-gray-50 border-b flex justify-between items-center">
+                  <div key={index} className="border border-graphite rounded-[10px] bg-onyx overflow-hidden">
+                    
+                    {/* Section Header */}
+                    <div className="p-5 bg-carbon border-b border-graphite flex justify-between items-center">
                       <div>
-                        <h3 className="font-bold text-gray-900">
+                        <h3 className="font-serif text-xl text-white">
                           Section {index + 1}: {section.title}
                         </h3>
-                        <p className="text-sm text-gray-500 mt-1">
+                        <p className="text-sm text-fog mt-1">
                           • {section.duration || "0 min"}
                         </p>
                       </div>
                       {section.isFreePreview && (
-                        <span className="text-xs font-bold text-green-600 bg-green-100 px-3 py-1 rounded-full">Free Preview</span>
+                        <span className="text-xs font-semibold text-copper border border-copper/30 bg-copper/10 px-3 py-1 rounded-full uppercase tracking-wider">
+                          Free Preview
+                        </span>
                       )}
                     </div>
 
-                    {/* ✅ لو الفيديو موجود، بنعرضه. لو مش موجود (مخفي)، بنعرض قفل */}
+                    {/* Section Video / Lock */}
                     {section.videoUrl ? (
-                      <div className="p-6 bg-black aspect-video">
+                      <div className="bg-black aspect-video">
                         <video
                           src={section.videoUrl}
                           controls
@@ -225,9 +233,9 @@ export default function CourseDetailsPage() {
                         </video>
                       </div>
                     ) : (
-                      <div className="p-8 bg-gray-100 flex flex-col items-center justify-center text-gray-400 border-t border-gray-200">
-                        <Lock size={32} className="mb-2" />
-                        <p className="text-sm font-medium">Enroll to unlock this video</p>
+                      <div className="p-10 bg-onyx flex flex-col items-center justify-center text-steel border-t border-graphite/50">
+                        <Lock size={32} className="mb-3" />
+                        <p className="text-base font-medium">Enroll to unlock this video</p>
                       </div>
                     )}
 
@@ -235,14 +243,14 @@ export default function CourseDetailsPage() {
                 ))}
               </div>
             ) : (
-              <div className="text-center py-12 bg-gray-50 rounded-xl border border-dashed">
-                <p className="text-gray-500">No curriculum added for this course yet.</p>
+              <div className="text-center py-16 bg-onyx rounded-[10px] border border-graphite border-dashed">
+                <p className="text-fog">No curriculum added for this course yet.</p>
               </div>
             )}
           </div>
 
           <div className="lg:col-span-1">
-            {/* مساحة فاضية أو ممكن تضيف فيها Requirements */}
+            {/* يمكن إضافة Requirements هنا لاحقاً */}
           </div>
         </div>
       </div>

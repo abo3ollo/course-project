@@ -35,34 +35,38 @@ function PendingContent() {
   }
 
   return (
-    <div className="w-full max-w-md bg-white shadow-lg rounded-2xl p-8 text-center">
-      <Mail className="w-16 h-16 text-blue-500 mx-auto mb-4" />
-      <h1 className="text-2xl font-bold mb-2">Verify Your Email</h1>
-      <p className="text-gray-600 mb-6">
+    <div className="w-full max-w-md bg-onyx border border-graphite rounded-[10px] p-10 text-center relative overflow-hidden">
+      
+      {/* Decorative Glow */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-48 h-48 bg-copper/5 rounded-full blur-2xl pointer-events-none"></div>
+
+      <Mail className="w-16 h-16 text-copper mx-auto mb-6" />
+      <h1 className="font-serif text-3xl text-white mb-3">Verify Your Email</h1>
+      <p className="text-fog mb-8">
         We sent a verification link to{" "}
-        <strong>{email || "your email"}</strong>.
+        <strong className="text-white font-medium">{email || "your email"}</strong>.
         <br />
         Click the link in the email to activate your account.
       </p>
 
       {sent ? (
-        <div className="p-4 bg-green-50 border border-green-200 rounded-lg flex items-center gap-2 text-green-800">
-          <CheckCircle className="w-5 h-5" />
-          <span className="text-sm">Email sent! Check your inbox.</span>
+        <div className="p-4 bg-green-400/10 border border-green-400/30 rounded-[10px] flex items-center justify-center gap-3 text-green-400">
+          <CheckCircle className="w-5 h-5 shrink-0" />
+          <span className="text-sm font-medium">Email sent! Check your inbox.</span>
         </div>
       ) : (
         <Button
           onClick={handleResend}
           disabled={isResending}
-          className="w-full"
+          className="w-full bg-white text-black hover:bg-gray-200 rounded-full font-medium h-11"
         >
           {isResending ? "Sending..." : "Resend Email"}
         </Button>
       )}
 
-      <div className="mt-6 text-sm text-gray-500">
+      <div className="mt-8 pt-6 border-t border-graphite text-sm text-fog">
         Already verified?{" "}
-        <Link href="/login" className="text-blue-600 hover:underline">
+        <Link href="/login" className="text-copper hover:underline">
           Login
         </Link>
       </div>
@@ -72,8 +76,8 @@ function PendingContent() {
 
 export default function PendingPage() {
   return (
-    <div className="min-h-[70vh] flex items-center justify-center px-4">
-      <Suspense fallback={<div className="text-gray-500">Loading...</div>}>
+    <div className="min-h-screen bg-obsidian text-bone font-sans flex items-center justify-center px-4 py-20 selection:bg-copper selection:text-white">
+      <Suspense fallback={<div className="text-copper animate-pulse font-serif text-xl">Loading...</div>}>
         <PendingContent />
       </Suspense>
     </div>
