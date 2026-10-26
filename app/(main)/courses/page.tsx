@@ -3,21 +3,37 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import api from "@/lib/axios";
-import { BookOpen, Tag, Star } from "lucide-react"; // ✅ ضفنا Star
+import { BookOpen, Tag, Star, Search, Filter } from "lucide-react";
 import { Course } from "@/src/types";
 import { useAuth } from "@/src/context/AuthContext";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Input } from "@/components/ui/input";
 
 export default function CoursesPage() {
   const { user } = useAuth();
   const [courses, setCourses] = useState<Course[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  // ✅ States للفلترة والبحث
+  const [searchTerm, setSearchTerm] = useState("");
+  const [category, setCategory] = useState("");
+  const [level, setLevel] = useState("");
+  const [sort, setSort] = useState("-createdAt");
+
   useEffect(() => {
     const fetchCourses = async () => {
+      setIsLoading(true);
       try {
-        const res = await api.get("/courses");
+        // بناء الـ URL بناءً على الفلاتر
+        const params = new URLSearchParams();
+        if (searchTerm) params.append("search", searchTerm);
+        if (category) params.append("category", category);
+        if (level) params.append("level", level);
+        if (sort) params.append("sort", sort);
+
+        const res = await api.get(`/courses?${params.toString()}`);
+        
+        // بنعرض الكورسات المنشورة بس
         const publishedCourses = res.data.data.courses.filter(
           (course: Course) => course.isPublished
         );
@@ -29,79 +45,20 @@ export default function CoursesPage() {
       }
     };
 
-    fetchCourses();
-  }, []);
+    // Debounce عشان ميعملش request مع كل حرف (يستنى اليوزر يخلص كتابة)
+    const timer = setTimeout(() => {
+      fetchCourses();
+    }, 500);
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-obsidian text-bone font-sans pb-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          
-          {/* Header Skeleton */}
-          <div className="mb-12 border-b border-graphite pb-8">
-            <Skeleton className="h-10 w-48 bg-carbon mb-3" />
-            <Skeleton className="h-4 w-80 bg-carbon" />
-          </div>
-
-          {/* Grid Skeleton */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {[1, 2, 3, 4].map((i) => (
-              <div 
-                key={i}
-                className="flex flex-col bg-onyx rounded-[10px] border border-graphite overflow-hidden"
-              >
-                {/* Thumbnail Skeleton */}
-                <div className="relative h-48 w-full">
-                  <Skeleton className="w-full h-full bg-carbon rounded-none" />
-                </div>
-
-                {/* Content Skeleton */}
-                <div className="p-6 flex flex-col grow">
-                  {/* Category */}
-                  <div className="flex items-center gap-2 mb-3">
-                    <Skeleton className="h-3 w-3 rounded-full bg-carbon" />
-                    <Skeleton className="h-3 w-20 bg-carbon" />
-                  </div>
-
-                  {/* Title */}
-                  <Skeleton className="h-6 w-full bg-carbon mb-2" />
-                  <Skeleton className="h-6 w-2/3 bg-carbon mb-3" />
-
-                  {/* Description */}
-                  <Skeleton className="h-4 w-full bg-carbon mb-2" />
-                  <Skeleton className="h-4 w-4/5 bg-carbon mb-4" />
-                  
-                  {/* Rating */}
-                  <div className="flex items-center gap-2 mb-4">
-                    <Skeleton className="h-4 w-8 bg-carbon" />
-                    <div className="flex gap-1">
-                      {[...Array(5)].map((_, idx) => (
-                        <Skeleton key={idx} className="h-3.5 w-3.5 rounded-full bg-carbon" />
-                      ))}
-                    </div>
-                    <Skeleton className="h-3 w-6 bg-carbon" />
-                  </div>
-
-                  {/* Instructor */}
-                  <div className="flex items-center gap-3 mt-auto pt-4 border-t border-graphite">
-                    <Skeleton className="w-7 h-7 rounded-full bg-carbon shrink-0" />
-                    <Skeleton className="h-4 w-24 bg-carbon" />
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  }
+    return () => clearTimeout(timer);
+  }, [searchTerm, category, level, sort]);
 
   return (
     <div className="min-h-screen bg-obsidian text-bone font-sans pb-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6 border-b border-graphite pb-8">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-6 border-b border-graphite pb-8">
           <div className="text-center md:text-left">
             <h1 className="font-serif text-4xl text-white">Browse Catalog</h1>
             <p className="text-fog mt-3 max-w-xl">
@@ -118,11 +75,67 @@ export default function CoursesPage() {
           )}
         </div>
 
-        {courses.length === 0 ? (
+        {/* ✅ Search & Filters Bar */}
+        <div className="bg-onyx border border-graphite rounded-[10px] p-4 mb-8 flex flex-col md:flex-row gap-4 items-center">
+          {/* Search Bar */}
+          <div className="relative flex-1 w-full">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-fog" size={18} />
+            <Input
+              type="text"
+              placeholder="Search for courses..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 bg-carbon border-graphite text-white placeholder:text-fog focus-visible:ring-copper h-11"
+            />
+          </div>
+
+          {/* Category Filter */}
+          <select
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            className="w-full md:w-auto h-11 rounded-md border border-graphite bg-carbon px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-copper"
+          >
+            <option value="">All Categories</option>
+            <option value="Programming">Programming</option>
+            <option value="Design">Design</option>
+            <option value="Business">Business</option>
+          </select>
+
+          {/* Level Filter */}
+          <select
+            value={level}
+            onChange={(e) => setLevel(e.target.value)}
+            className="w-full md:w-auto h-11 rounded-md border border-graphite bg-carbon px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-copper"
+          >
+            <option value="">All Levels</option>
+            <option value="Beginner">Beginner</option>
+            <option value="Intermediate">Intermediate</option>
+            <option value="Advanced">Advanced</option>
+          </select>
+
+          {/* Sort */}
+          <select
+            value={sort}
+            onChange={(e) => setSort(e.target.value)}
+            className="w-full md:w-auto h-11 rounded-md border border-graphite bg-carbon px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-copper"
+          >
+            <option value="-createdAt">Newest</option>
+            <option value="price">Price: Low to High</option>
+            <option value="-price">Price: High to Low</option>
+            <option value="-ratingsAverage">Highest Rated</option>
+          </select>
+        </div>
+
+        {/* Grid */}
+        {isLoading ? (
+          <div className="flex justify-center items-center py-20">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-copper"></div>
+          </div>
+        ) : courses.length === 0 ? (
           <div className="text-center py-24 bg-onyx rounded-[10px] border border-graphite">
-            <BookOpen className="mx-auto h-12 w-12 text-[#2e3038] mb-4" />
-            <h3 className="text-lg font-medium text-white">No courses available</h3>
-            <p className="text-fog mt-1">Check back later for new content.</p>
+            <Filter className="mx-auto h-12 w-12 text-[#2e3038] mb-4" />
+            <h3 className="text-lg font-medium text-white">No courses found</h3>
+            <p className="text-fog mt-1">Try adjusting your search or filters.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -161,7 +174,7 @@ export default function CoursesPage() {
                     {course.description}
                   </p>
 
-                  {/* ✅ تقييم الكورس (النجوم) */}
+                  {/* Ratings */}
                   <div className="flex items-center gap-2 mb-4">
                     <span className="text-copper font-bold text-sm">
                       {course.ratingsAverage || "4.5"}

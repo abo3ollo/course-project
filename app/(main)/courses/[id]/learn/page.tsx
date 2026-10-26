@@ -4,9 +4,10 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import api from "@/lib/axios";
 import { Course } from "@/src/types";
-import { PlayCircle, ArrowRight, Lock, BookOpen } from "lucide-react";
+import { PlayCircle, ArrowRight, Lock, BookOpen, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 export default function LearnPage() {
   const params = useParams();
@@ -16,23 +17,43 @@ export default function LearnPage() {
   const [course, setCourse] = useState<Course | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [activeVideo, setActiveVideo] = useState<any>(null);
+  
+  // ✅ State جديدة لحفظ الأقسام اللي اكتملت
+  const [completedSections, setCompletedSections] = useState<string[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     const fetchCourse = async () => {
-      try {
+            try {
         const res = await api.get(`/courses/${id}`);
+        
+        // ✅ بناخد البيانات الجديدة
         const courseData = res.data.data.course;
+        const userCompletedSections = res.data.data.completedSections || []; 
+        
         setCourse(courseData);
+
+        // ✅ بنحط الأقسام المكتملة في الـ State
+        setCompletedSections(userCompletedSections); 
 
         // نختار أول فيديو يتشغل أوتوماتيك
         if (courseData.sections && courseData.sections.length > 0) {
+          // 1. بنجيب أول فيديو مش مكتمل
+          const firstUncompleted = courseData.sections.find(
+            (s: any) => s.videoUrl && !userCompletedSections.includes(s._id)
+          );
+          
+          // 2. بنجيب أول فيديو متاح بشكل عام (احتياطي)
           const firstSectionWithVideo = courseData.sections.find((s: any) => s.videoUrl);
-          if (firstSectionWithVideo) {
+          
+          if (firstUncompleted) {
+            setActiveVideo(firstUncompleted);
+          } else if (firstSectionWithVideo) {
             setActiveVideo(firstSectionWithVideo);
           }
         }
       } catch (err) {
-        router.push(`/courses/${id}`); // لو مش مصرح له يرجعه
+        router.push(`/courses/${id}`); 
       } finally {
         setIsLoading(false);
       }
@@ -40,6 +61,24 @@ export default function LearnPage() {
 
     if (id) fetchCourse();
   }, [id, router]);
+
+  // ✅ دالة تعليم القسم كمكتمل
+  const markAsCompleted = async () => {
+    if (!activeVideo || completedSections.includes(activeVideo._id) || isSubmitting) return;
+
+    setIsSubmitting(true);
+    try {
+      await api.post(`/courses/${id}/sections/${activeVideo._id}/complete`);
+      
+      // بنحدث الـ State عشان العلامة تظهر فوراً
+      setCompletedSections((prev) => [...prev, activeVideo._id]);
+      toast.success("Marked as completed!");
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || "Failed to mark as completed");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -72,32 +111,43 @@ export default function LearnPage() {
 
         {/* Sidebar List */}
         <div className="overflow-y-auto flex-1 p-3 space-y-4 custom-scrollbar">
-          {course.sections?.map((section: any, index) => (
-            <div key={section._id || index} className="mb-2">
-              <h3 className="text-xs font-bold text-copper p-2 uppercase tracking-widest">
-                Section {index + 1}: {section.title}
-              </h3>
-              <div className="space-y-1 mt-1">
-                {section.videoUrl ? (
-                  <button
-                    onClick={() => setActiveVideo(section)}
-                    className={`w-full text-left px-3 py-2.5 rounded-lg text-sm flex items-center gap-3 transition-colors cursor-pointer ${
-                      activeVideo?._id === section._id 
-                        ? 'bg-copper/10 text-copper border-l-2 border-copper' 
-                        : 'text-bone hover:bg-graphite border-l-2 border-transparent'
-                    }`}
-                  >
-                    <PlayCircle size={16} className={activeVideo?._id === section._id ? "text-copper" : "text-steel"} />
-                    <span className="line-clamp-1">{section.introVideoTitle || section.title}</span>
-                  </button>
-                ) : (
-                  <div className="px-3 py-2 text-sm text-steel italic flex items-center gap-2">
-                    <Lock size={14} /> No video available.
-                  </div>
-                )}
+          {course.sections?.map((section: any, index) => {
+            const isCompleted = completedSections.includes(section._id);
+
+            return (
+              <div key={section._id || index} className="mb-2">
+                <h3 className="text-xs font-bold text-copper p-2 uppercase tracking-widest">
+                  Section {index + 1}: {section.title}
+                </h3>
+                <div className="space-y-1 mt-1">
+                  {section.videoUrl ? (
+                    <button
+                      onClick={() => setActiveVideo(section)}
+                      className={`w-full text-left px-3 py-2.5 rounded-lg text-sm flex items-center justify-between gap-3 transition-colors cursor-pointer ${
+                        activeVideo?._id === section._id 
+                          ? 'bg-copper/10 text-copper border-l-2 border-copper' 
+                          : 'text-bone hover:bg-graphite border-l-2 border-transparent'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                         {/* ✅ لو الفيديو مكتمل، بتظهر علامة صح، لو لأ بيظهر أيقونة تشغيل */}
+                         {isCompleted ? (
+                            <CheckCircle2 size={16} className="text-green-500" />
+                         ) : (
+                            <PlayCircle size={16} className={activeVideo?._id === section._id ? "text-copper" : "text-steel"} />
+                         )}
+                         <span className="line-clamp-1">{section.introVideoTitle || section.title}</span>
+                      </div>
+                    </button>
+                  ) : (
+                    <div className="px-3 py-2 text-sm text-steel italic flex items-center gap-2">
+                      <Lock size={14} /> No video available.
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
@@ -111,6 +161,8 @@ export default function LearnPage() {
               controls 
               autoPlay
               className="w-full max-h-[75vh]"
+              // ✅ لو حبيت تعلمه اوتوماتيك لما الفيديو يخلص:
+              // onEnded={markAsCompleted}
             >
               Your browser does not support the video tag.
             </video>
@@ -125,12 +177,34 @@ export default function LearnPage() {
         {/* تفاصيل الفيديو */}
         {activeVideo && (
           <div className="p-8 md:p-10 max-w-4xl">
-            <h1 className="font-serif text-3xl md:text-4xl text-white mb-4">
-              {activeVideo.introVideoTitle || activeVideo.title}
-            </h1>
+            
+            {/* ✅ شريط العنوان وزرار الإكمال */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+              <h1 className="font-serif text-3xl md:text-4xl text-white">
+                {activeVideo.introVideoTitle || activeVideo.title}
+              </h1>
+
+              <Button 
+                onClick={markAsCompleted} 
+                disabled={completedSections.includes(activeVideo._id) || isSubmitting}
+                className={`rounded-full px-6 transition-all ${
+                  completedSections.includes(activeVideo._id) 
+                    ? 'bg-green-500/20 text-green-500 border border-green-500/30 cursor-default' 
+                    : 'bg-white text-black hover:bg-gray-200'
+                }`}
+              >
+                {completedSections.includes(activeVideo._id) ? (
+                  <><CheckCircle2 className="w-4 h-4 mr-2" /> Completed</>
+                ) : (
+                  "Mark as Complete"
+                )}
+              </Button>
+            </div>
+
             <p className="text-fog text-lg leading-relaxed mb-6">
               {activeVideo.learningObjective}
             </p>
+            
             <div className="inline-flex items-center gap-2 text-sm text-copper bg-copper/10 px-4 py-2 rounded-full border border-copper/20">
               <span className="font-semibold tracking-wider uppercase text-xs">Duration</span>
               <span className="w-1 h-1 rounded-full bg-copper/50"></span>

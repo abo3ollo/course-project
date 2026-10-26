@@ -27,7 +27,7 @@ export default function MyCoursesPage() {
     fetchMyCourses();
   }, []);
 
-   if (isLoading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-obsidian text-bone font-sans pb-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -62,6 +62,12 @@ export default function MyCoursesPage() {
                   <Skeleton className="h-6 w-full bg-carbon mb-2" />
                   <Skeleton className="h-6 w-2/3 bg-carbon mb-4" />
                   
+                  {/* Progress Bar Skeleton */}
+                  <div className="mt-2 mb-4 space-y-2">
+                    <Skeleton className="h-1.5 w-full rounded-full bg-carbon" />
+                    <Skeleton className="h-3 w-16 bg-carbon" />
+                  </div>
+
                   {/* Instructor */}
                   <div className="flex items-center gap-3 mt-auto">
                     <Skeleton className="w-6 h-6 rounded-full bg-carbon" />
@@ -103,9 +109,8 @@ export default function MyCoursesPage() {
             </Link>
           </div>
         ) : (
-          // ✅ ضبطنا الـ Grid عشان يبقى 1 في الموبايل، 2 في md، و 3 في lg و xl
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {courses.map((course) => (
+            {courses.map((course: any) => (
               <div 
                 key={course._id}
                 className="group flex flex-col bg-onyx rounded-[10px] border border-graphite overflow-hidden hover:border-[#2e3038] transition-all duration-300"
@@ -133,9 +138,23 @@ export default function MyCoursesPage() {
                     <span>{course.category}</span>
                   </div>
 
-                  <h2 className="text-xl font-serif text-white mb-4 line-clamp-2 leading-snug">
+                  <h2 className="text-xl font-serif text-white mb-2 line-clamp-2 leading-snug">
                     {course.title}
                   </h2>
+
+                  {/* ✅ شريط التقدم (Progress Bar) */}
+                  <div className="mt-2 mb-4">
+                    <div className="flex justify-between text-xs text-fog mb-1.5">
+                      <span>{course.completedCount || 0} / {course.totalSections || 0} sections</span>
+                      <span className="text-copper font-bold">{course.progress || 0}%</span>
+                    </div>
+                    <div className="w-full bg-graphite h-1.5 rounded-full overflow-hidden">
+                      <div 
+                        className="bg-copper h-full transition-all duration-500" 
+                        style={{ width: `${course.progress || 0}%` }}
+                      ></div>
+                    </div>
+                  </div>
                   
                   <div className="flex items-center gap-3 text-sm text-fog mt-auto">
                     {course.instructor?.avatar ? (
