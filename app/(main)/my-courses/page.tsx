@@ -6,6 +6,7 @@ import api from "@/lib/axios";
 import { Course } from "@/src/types";
 import { BookOpen, PlayCircle, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function MyCoursesPage() {
   const [courses, setCourses] = useState<Course[]>([]);
@@ -26,10 +27,56 @@ export default function MyCoursesPage() {
     fetchMyCourses();
   }, []);
 
-  if (isLoading) {
+   if (isLoading) {
     return (
-      <div className="min-h-screen bg-obsidian flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-copper"></div>
+      <div className="min-h-screen bg-obsidian text-bone font-sans pb-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          
+          {/* Header Skeleton */}
+          <div className="mb-12 border-b border-graphite pb-8">
+            <Skeleton className="h-10 w-48 bg-carbon mb-3" />
+            <Skeleton className="h-4 w-80 bg-carbon" />
+          </div>
+
+          {/* Grid Skeleton */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[1, 2, 3].map((i) => (
+              <div 
+                key={i}
+                className="flex flex-col bg-onyx rounded-[10px] border border-graphite overflow-hidden"
+              >
+                {/* Thumbnail Skeleton */}
+                <div className="relative h-52 w-full">
+                  <Skeleton className="w-full h-full bg-carbon rounded-none" />
+                </div>
+
+                {/* Content Skeleton */}
+                <div className="p-6 flex flex-col grow">
+                  {/* Category */}
+                  <div className="flex items-center gap-2 mb-3">
+                    <Skeleton className="h-3 w-3 rounded-full bg-carbon" />
+                    <Skeleton className="h-3 w-20 bg-carbon" />
+                  </div>
+
+                  {/* Title */}
+                  <Skeleton className="h-6 w-full bg-carbon mb-2" />
+                  <Skeleton className="h-6 w-2/3 bg-carbon mb-4" />
+                  
+                  {/* Instructor */}
+                  <div className="flex items-center gap-3 mt-auto">
+                    <Skeleton className="w-6 h-6 rounded-full bg-carbon" />
+                    <Skeleton className="h-4 w-24 bg-carbon" />
+                  </div>
+
+                  {/* Button */}
+                  <div className="mt-6 pt-6 border-t border-graphite">
+                    <Skeleton className="h-10 w-full rounded-full bg-carbon" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     );
   }

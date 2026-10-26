@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useAuth } from "../context/AuthContext";
 import { LogOut, GraduationCap } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Navbar() {
   const { user, isAuthenticated, isLoading, logout } = useAuth();
@@ -36,6 +37,14 @@ export default function Navbar() {
           {/* روابط التنقل (Nav Links) */}
           {isAuthenticated && (
             <div className="hidden md:flex items-center gap-8">
+              {user?.role === "ADMIN" && (
+                <Link 
+                  href="/admin" 
+                  className={`text-sm font-medium transition-colors ${pathname === '/admin' ? 'text-copper' : 'text-copper/70 hover:text-copper'}`}
+                >
+                  Admin Dashboard
+                </Link>
+              )}
               <Link 
                 href="/my-courses" 
                 className={`text-sm font-medium transition-colors ${pathname === '/my-courses' ? 'text-white' : 'text-fog hover:text-white'}`}
@@ -61,7 +70,13 @@ export default function Navbar() {
         {/* User Section */}
         <div className="flex items-center gap-5">
           {isLoading ? (
-            <span className="text-sm text-fog">Loading...</span>
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-3 px-3 py-1.5 rounded-full border border-graphite bg-carbon">
+                <Skeleton className="w-7 h-7 rounded-full bg-graphite" />
+                <Skeleton className="h-4 w-20 bg-graphite" />
+              </div>
+              <Skeleton className="h-9 w-24 rounded-full bg-graphite" />
+            </div>
           ) : isAuthenticated ? (
             <>
               {/* بروفايل اليوزر: خلفية داكنة بحدود خفيفة */}
