@@ -4,8 +4,8 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import api from "@/lib/axios";
-import { Course } from "@/src/types";
-import { Clock, Globe, ShieldCheck, PlayCircle, BookOpen, Lock } from "lucide-react"; 
+import { Course, Review } from "@/src/types";
+import { Clock, Globe, ShieldCheck, PlayCircle, BookOpen, Lock, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useAuth } from "@/src/context/AuthContext";
@@ -21,6 +21,10 @@ export default function CourseDetailsPage() {
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isEnrolling, setIsEnrolling] = useState(false);
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [newRating, setNewRating] = useState(5);
+  const [newComment, setNewComment] = useState("");
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
 
   useEffect(() => {
     const fetchCourse = async () => {
@@ -37,6 +41,39 @@ export default function CourseDetailsPage() {
 
     if (id) fetchCourse();
   }, [id]);
+
+  useEffect(() => {
+    const fetchReviews = async () => {
+      try {
+        const res = await api.get(`/courses/${id}/reviews`);
+        setReviews(res.data.data.reviews);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    if (id) fetchReviews();
+  }, [id]);
+
+  const submitReview = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmittingReview(true);
+    try {
+      await api.post(`/courses/${id}/reviews`, {
+        rating: newRating,
+        comment: newComment,
+      });
+      toast.success("Review submitted!");
+      setNewComment("");
+
+      // تحديث المراجعات
+      const res = await api.get(`/courses/${id}/reviews`);
+      setReviews(res.data.data.reviews);
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || "Failed to submit review");
+    } finally {
+      setIsSubmittingReview(false);
+    }
+  };
 
   const handleEnroll = async () => {
     if (!isAuthenticated) {
@@ -80,7 +117,7 @@ export default function CourseDetailsPage() {
 
   return (
     <div className="min-h-screen bg-obsidian text-bone font-sans pb-20 selection:bg-copper selection:text-white">
-      
+
       {/* ── Hero Section ── */}
       <div className="bg-onyx border-b border-graphite py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-3 gap-12">
@@ -203,7 +240,7 @@ export default function CourseDetailsPage() {
               <div className="space-y-4">
                 {course.sections.map((section, index) => (
                   <div key={index} className="border border-graphite rounded-[10px] bg-onyx overflow-hidden">
-                    
+
                     {/* Section Header */}
                     <div className="p-5 bg-carbon border-b border-graphite flex justify-between items-center">
                       <div>
@@ -253,6 +290,90 @@ export default function CourseDetailsPage() {
             {/* يمكن إضافة Requirements هنا لاحقاً */}
           </div>
         </div>
+      </div>
+
+       {/* Reviews Section */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="mt-16">
+          <div className="flex items-center gap-4 mb-8">
+            <h2 className="font-serif text-3xl text-white">Student Reviews</h2>
+            <div className="flex items-center gap-2 bg-carbon border border-graphite px-4 py-1.5 rounded-full">
+              <span className="text-copper font-bold text-lg">{course.ratingsAverage}</span>
+              <span className="text-fog text-sm">({course.ratingsQuantity} reviews)</span>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            {reviews.length === 0 ? (
+              <p className="text-fog">No reviews yet. Be the first to review!</p>
+            ) : (
+              reviews.map((review) => (
+                <div key={review._id} className="bg-onyx border border-graphite p-6 rounded-[10px]">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      {review.user.avatar ? (
+                        <img src={review.user.avatar} className="w-10 h-10 rounded-full object-cover" />
+                      ) : (
+                        <div className="w-10 h-10 rounded-full bg-graphite text-copper flex items-center justify-center font-bold">
+                          {review.user.firstName.charAt(0)}
+                        </div>
+                      )}
+                      <div>
+                        <p className="text-white font-medium">{review.user.firstName} {review.user.lastName}</p>
+                        <p className="text-xs text-fog">{new Date(review.createdAt).toLocaleDateString()}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      {[...Array(5)].map((_, i) => (
+                        <Star key={i} size={16} className={i < review.rating ? "text-copper fill-copper" : "text-graphite"} />
+                      ))}
+                    </div>
+                  </div>
+                  <p className="text-bone">{review.comment}</p>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+
+        {/* Add Review Form */}
+        {isAuthorized && !isInstructor && (
+          <div className="mt-8 bg-onyx border border-graphite p-6 rounded-[10px]">
+            <h3 className="font-serif text-xl text-white mb-4">Leave a Review</h3>
+            <form onSubmit={submitReview} className="space-y-4">
+              <div className="flex items-center gap-2">
+                <span className="text-fog text-sm">Your Rating:</span>
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <button
+                    key={star}
+                    type="button"
+                    onClick={() => setNewRating(star)}
+                    className="focus:outline-none hover:scale-110 transition"
+                  >
+                    <Star
+                      size={24}
+                      className={star <= newRating ? "text-copper fill-copper" : "text-graphite"}
+                    />
+                  </button>
+                ))}
+              </div>
+              <textarea
+                required
+                value={newComment}
+                onChange={(e) => setNewComment(e.target.value)}
+                placeholder="Share your experience with this course..."
+                className="w-full bg-carbon border border-graphite rounded-md p-3 text-white focus:outline-none focus:ring-1 focus:ring-copper min-h-25"
+              />
+              <Button
+                type="submit"
+                disabled={isSubmittingReview}
+                className="bg-white text-black hover:bg-gray-200 rounded-full font-medium px-6"
+              >
+                {isSubmittingReview ? "Submitting..." : "Submit Review"}
+              </Button>
+            </form>
+          </div>
+        )}
       </div>
     </div>
   );

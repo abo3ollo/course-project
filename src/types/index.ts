@@ -43,4 +43,20 @@ export type Course = {
   isPublished: boolean;
   createdAt: string;
   sections?: Section[];    // ✅ ضيفنا الأقسام هنا
+  ratingsAverage: number;
+  ratingsQuantity: number;
 };
+
+export type Review = {
+  _id: string;
+  user: {
+    _id: string;
+    firstName: string;
+    lastName: string;
+    avatar?: string;
+  };
+  rating: number;
+  comment: string;
+  createdAt: string;
+};
+

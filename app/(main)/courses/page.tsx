@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import api from "@/lib/axios";
-import { BookOpen, Tag } from "lucide-react";
+import { BookOpen, Tag, Star } from "lucide-react"; // ✅ ضفنا Star
 import { Course } from "@/src/types";
 import { useAuth } from "@/src/context/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -44,14 +44,14 @@ export default function CoursesPage() {
           </div>
 
           {/* Grid Skeleton */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {[1, 2, 3].map((i) => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {[1, 2, 3, 4].map((i) => (
               <div 
                 key={i}
                 className="flex flex-col bg-onyx rounded-[10px] border border-graphite overflow-hidden"
               >
                 {/* Thumbnail Skeleton */}
-                <div className="relative h-52 w-full">
+                <div className="relative h-48 w-full">
                   <Skeleton className="w-full h-full bg-carbon rounded-none" />
                 </div>
 
@@ -65,17 +65,27 @@ export default function CoursesPage() {
 
                   {/* Title */}
                   <Skeleton className="h-6 w-full bg-carbon mb-2" />
-                  <Skeleton className="h-6 w-2/3 bg-carbon mb-4" />
+                  <Skeleton className="h-6 w-2/3 bg-carbon mb-3" />
+
+                  {/* Description */}
+                  <Skeleton className="h-4 w-full bg-carbon mb-2" />
+                  <Skeleton className="h-4 w-4/5 bg-carbon mb-4" />
                   
-                  {/* Instructor */}
-                  <div className="flex items-center gap-3 mt-auto">
-                    <Skeleton className="w-6 h-6 rounded-full bg-carbon" />
-                    <Skeleton className="h-4 w-24 bg-carbon" />
+                  {/* Rating */}
+                  <div className="flex items-center gap-2 mb-4">
+                    <Skeleton className="h-4 w-8 bg-carbon" />
+                    <div className="flex gap-1">
+                      {[...Array(5)].map((_, idx) => (
+                        <Skeleton key={idx} className="h-3.5 w-3.5 rounded-full bg-carbon" />
+                      ))}
+                    </div>
+                    <Skeleton className="h-3 w-6 bg-carbon" />
                   </div>
 
-                  {/* Button */}
-                  <div className="mt-6 pt-6 border-t border-graphite">
-                    <Skeleton className="h-10 w-full rounded-full bg-carbon" />
+                  {/* Instructor */}
+                  <div className="flex items-center gap-3 mt-auto pt-4 border-t border-graphite">
+                    <Skeleton className="w-7 h-7 rounded-full bg-carbon shrink-0" />
+                    <Skeleton className="h-4 w-24 bg-carbon" />
                   </div>
                 </div>
               </div>
@@ -143,16 +153,39 @@ export default function CoursesPage() {
                     <span>{course.level}</span>
                   </div>
 
-                  <h2 className="font-serif text-xl text-white mb-3 line-clamp-2 leading-snug group-hover:text-copper transition-colors">
+                  <h2 className="font-serif text-xl text-white mb-2 line-clamp-2 leading-snug group-hover:text-copper transition-colors">
                     {course.title}
                   </h2>
 
-                  <p className="text-sm text-fog line-clamp-2 mb-6 grow">
+                  <p className="text-sm text-fog line-clamp-2 mb-4 grow">
                     {course.description}
                   </p>
 
+                  {/* ✅ تقييم الكورس (النجوم) */}
+                  <div className="flex items-center gap-2 mb-4">
+                    <span className="text-copper font-bold text-sm">
+                      {course.ratingsAverage || "4.5"}
+                    </span>
+                    <div className="flex items-center">
+                      {[...Array(5)].map((_, i) => (
+                        <Star
+                          key={i}
+                          size={14}
+                          className={
+                            i < Math.round(course.ratingsAverage || 4.5)
+                              ? "text-copper fill-copper"
+                              : "text-[#464853]"
+                          }
+                        />
+                      ))}
+                    </div>
+                    <span className="text-xs text-fog">
+                      ({course.ratingsQuantity || 0})
+                    </span>
+                  </div>
+
                   {/* Instructor */}
-                  <div className="flex items-center gap-3 mt-auto pt-5 border-t border-graphite">
+                  <div className="flex items-center gap-3 mt-auto pt-4 border-t border-graphite">
                     {course.instructor?.avatar ? (
                       <img
                         src={course.instructor.avatar}
