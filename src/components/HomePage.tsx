@@ -2,30 +2,31 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { PlayCircle, BookOpen, Clock, ArrowRight, Award } from "lucide-react";
+import { PlayCircle, BookOpen, Clock, ArrowRight, Award, Users, LayoutDashboard, PlusCircle } from "lucide-react";
 import { useAuth } from "@/src/context/AuthContext";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Button } from "@/components/ui/button"; // ✅ ضفنا الاستيراد ده
+import { Button } from "@/components/ui/button";
 import api from "@/lib/axios";
 import { toast } from "sonner";
 
 export default function HomePage() {
   const { user, isAuthenticated, isLoading: isAuthLoading } = useAuth();
 
-  // ✅ ضفنا any عشان TypeScript ميزعلش
-  const [stats, setStats] = useState<any>({
-    enrolledCount: 0,
-    completedCount: 0,
-    continueLearningCourse: null,
-  });
+  const [studentStats, setStudentStats] = useState<any>(null);
+  const [instructorStats, setInstructorStats] = useState<any>(null);
   const [isDataLoading, setIsDataLoading] = useState(true);
 
   useEffect(() => {
     if (isAuthenticated) {
-      const fetchStats = async () => {
+      const fetchData = async () => {
         try {
-          const res = await api.get("/courses/dashboard-stats");
-          setStats(res.data.data);
+          if (user?.role === "INSTRUCTOR" || user?.role === "ADMIN") {
+            const res = await api.get("/courses/instructor-stats");
+            setInstructorStats(res.data.data);
+          } else {
+            const res = await api.get("/courses/dashboard-stats");
+            setStudentStats(res.data.data);
+          }
         } catch (err) {
           console.error("Failed to load stats", err);
           toast.error("Failed to load dashboard data");
@@ -33,11 +34,11 @@ export default function HomePage() {
           setIsDataLoading(false);
         }
       };
-      fetchStats();
+      fetchData();
     } else if (!isAuthLoading) {
       setIsDataLoading(false);
     }
-  }, [isAuthenticated, isAuthLoading]);
+  }, [isAuthenticated, isAuthLoading, user]);
 
   // ── Skeleton Loading ──
   if (isAuthLoading || (isAuthenticated && isDataLoading)) {
@@ -50,7 +51,6 @@ export default function HomePage() {
               <Skeleton className="h-14 w-75 md:w-112.5 bg-carbon" />
             </div>
           </section>
-
           <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[1, 2, 3].map((i) => (
               <div key={i} className="bg-onyx border border-graphite rounded-[10px] p-6 flex flex-col justify-between h-40">
@@ -62,7 +62,6 @@ export default function HomePage() {
               </div>
             ))}
           </section>
-
           <section className="grid grid-cols-1 lg:grid-cols-3 gap-10 pt-4">
             <div className="lg:col-span-2 space-y-6">
               <Skeleton className="h-8 w-48 bg-carbon" />
@@ -87,6 +86,7 @@ export default function HomePage() {
     );
   }
 
+  // ── واجهة الزائر ──
   if (!isAuthenticated) {
     return (
       <div className="min-h-[80vh] bg-obsidian flex flex-col items-center justify-center text-center px-4 relative overflow-hidden">
@@ -109,16 +109,102 @@ export default function HomePage() {
     );
   }
 
-  const { enrolledCount, completedCount, continueLearningCourse } = stats;
+  // ── واجهة المعلم (Instructor Dashboard) ──
+  if (user?.role === "INSTRUCTOR" || user?.role === "ADMIN") {
+    return (
+      <div className="min-h-screen bg-obsidian text-bone font-sans pb-20 selection:bg-copper selection:text-white">
+        <div className="max-w-6xl mx-auto px-6 pt-16 space-y-16">
+          {/* Header */}
+          <section className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-graphite pb-10">
+            <div>
+              <p className="text-copper text-sm font-semibold tracking-widest uppercase mb-3">
+                Instructor Dashboard
+              </p>
+              <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl text-white tracking-tight">
+                Welcome, {user?.firstName}.
+              </h1>
+            </div>
+            <div className="flex items-center gap-3 text-sm text-fog">
+              <LayoutDashboard size={16} />
+              <span>Manage your courses and students</span>
+            </div>
+          </section>
+
+          {/* Stats Grid */}
+          <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="bg-onyx border border-graphite rounded-[10px] p-6 flex flex-col justify-between h-40">
+              <div className="flex justify-between items-start">
+                <span className="text-fog text-sm font-medium">Total Courses</span>
+                <BookOpen size={20} className="text-copper" />
+              </div>
+              <div className="font-serif text-5xl text-white">{instructorStats?.totalCourses || 0}</div>
+            </div>
+
+            <div className="bg-onyx border border-graphite rounded-[10px] p-6 flex flex-col justify-between h-40">
+              <div className="flex justify-between items-start">
+                <span className="text-fog text-sm font-medium">Enrolled Students</span>
+                <Users size={20} className="text-copper" />
+              </div>
+              <div className="font-serif text-5xl text-white">{instructorStats?.totalStudents || 0}</div>
+            </div>
+
+            <div className="bg-onyx border border-graphite rounded-[10px] p-6 flex flex-col justify-between h-40">
+              <div className="flex justify-between items-start">
+                <span className="text-fog text-sm font-medium">Average Rating</span>
+                <Award size={20} className="text-copper" />
+              </div>
+              <div className="font-serif text-5xl text-white">{instructorStats?.avgRating || "0.0"}</div>
+            </div>
+          </section>
+
+          {/* Quick Actions for Instructor */}
+          <section className="grid grid-cols-1 lg:grid-cols-3 gap-10 pt-4">
+            <div className="lg:col-span-2 space-y-6">
+               <h2 className="font-serif text-2xl text-white">Your Top Courses</h2>
+               {/* هنا ممكن تعرض الكورسات اللي هو عملها */}
+               <div className="bg-onyx border border-graphite rounded-[10px] p-8 text-center flex flex-col items-center justify-center h-45">
+                  <p className="text-fog mb-4">Manage your existing courses or create a new one.</p>
+                  <Link href="/courses/create">
+                    <Button className="bg-copper text-white hover:bg-copper/90 rounded-full px-6">
+                      + Create New Course
+                    </Button>
+                  </Link>
+               </div>
+            </div>
+            
+            <div className="lg:col-span-1 space-y-6">
+              <h2 className="font-serif text-2xl text-white">Quick Actions</h2>
+              <div className="bg-onyx border border-graphite rounded-[10px] p-6 flex flex-col gap-4">
+                <Link
+                  href="/courses/create"
+                  className="w-full bg-white text-black text-center py-3 rounded-full font-medium hover:bg-gray-200 transition flex items-center justify-center gap-2"
+                >
+                  <PlusCircle size={18} /> Create Course
+                </Link>
+                <Link
+                  href="/profile"
+                  className="w-full border border-[#777a88] text-white text-center py-3 rounded-full font-medium hover:bg-white/5 transition"
+                >
+                  Profile Settings
+                </Link>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    );
+  }
+
+  // ── واجهة الطالب (Student Dashboard) ──
+  const { enrolledCount, completedCount, continueLearningCourse } = studentStats || {};
 
   return (
     <div className="min-h-screen bg-obsidian text-bone font-sans pb-20 selection:bg-copper selection:text-white">
       <div className="max-w-6xl mx-auto px-6 pt-16 space-y-16">
-
         <section className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-graphite pb-10">
           <div>
             <p className="text-copper text-sm font-semibold tracking-widest uppercase mb-3">
-              Dashboard
+              Student Dashboard
             </p>
             <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl text-white tracking-tight">
               Welcome back, {user?.firstName}.
@@ -152,9 +238,7 @@ export default function HomePage() {
               <span className="text-fog text-sm font-medium">Certificates</span>
               <Award size={20} className="text-copper" />
             </div>
-            <div className="font-serif text-5xl text-white">
-              {completedCount}
-            </div>
+            <div className="font-serif text-5xl text-white">{completedCount}</div>
           </div>
         </section>
 
