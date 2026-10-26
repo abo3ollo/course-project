@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { useAuth } from "../context/AuthContext";
 import { LogOut, GraduationCap } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import NotificationBell from "./NotificationBell";
 
 export default function Navbar() {
   const { user, isAuthenticated, isLoading, logout } = useAuth();
@@ -79,6 +80,7 @@ export default function Navbar() {
             </div>
           ) : isAuthenticated ? (
             <>
+              <NotificationBell />
               {/* بروفايل اليوزر: خلفية داكنة بحدود خفيفة */}
               <Link
                 href="/profile"
