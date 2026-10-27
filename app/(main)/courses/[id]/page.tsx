@@ -20,7 +20,6 @@ export default function CourseDetailsPage() {
   const [course, setCourse] = useState<Course | null>(null);
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [isEnrolling, setIsEnrolling] = useState(false);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [newRating, setNewRating] = useState(5);
   const [newComment, setNewComment] = useState("");
@@ -75,23 +74,15 @@ export default function CourseDetailsPage() {
     }
   };
 
-  const handleEnroll = async () => {
+  // ✅ دالة التوجيه لصفحة الدفع
+  const handleEnrollClick = () => {
     if (!isAuthenticated) {
       toast.error("Please login first to enroll");
       router.push("/login");
       return;
     }
-
-    setIsEnrolling(true);
-    try {
-      await api.post(`/courses/${id}/enroll`);
-      toast.success("Enrolled successfully!");
-      router.push(`/courses/${id}/learn`);
-    } catch (err: any) {
-      toast.error(err?.response?.data?.message || "Failed to enroll");
-    } finally {
-      setIsEnrolling(false);
-    }
+    // بنوديه لصفحة الدفع بدل ما نبعت الـ Request هنا
+    router.push(`/courses/${id}/checkout`);
   };
 
   if (isLoading) {
@@ -193,12 +184,12 @@ export default function CourseDetailsPage() {
                 </div>
               ) : (
                 <>
+                  {/* ✅ الزرار بقى بينقل لصفحة الدفع */}
                   <Button
-                    onClick={handleEnroll}
-                    disabled={isEnrolling}
+                    onClick={handleEnrollClick}
                     className="w-full bg-white text-black hover:bg-gray-200 h-12 text-lg rounded-full font-medium mb-4 transition-colors"
                   >
-                    {isEnrolling ? "Enrolling..." : "Enroll Now"}
+                    Enroll Now
                   </Button>
                   <p className="text-xs text-center text-steel mb-6">
                     30-Day Money-Back Guarantee

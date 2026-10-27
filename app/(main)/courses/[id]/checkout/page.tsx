@@ -49,11 +49,11 @@ export default function CheckoutPage() {
         <div className="bg-carbon border border-graphite p-4 rounded-lg mb-6 space-y-2">
           <div className="flex justify-between items-center">
             <span className="text-fog">Vodafone Cash:</span>
-            <span className="text-white font-mono">01012345678</span>
+            <span className="text-white font-mono">01555743737</span>
           </div>
           <div className="flex justify-between items-center">
             <span className="text-fog">InstaPay:</span>
-            <span className="text-white font-mono">your@instapay</span>
+            <span className="text-white font-mono">abdalrahmanaboollo@instapay</span>
           </div>
         </div>
 
