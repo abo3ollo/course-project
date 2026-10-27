@@ -5,7 +5,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useAuth } from "../context/AuthContext";
-import { LogOut, GraduationCap, DollarSign, ShieldAlert, BookOpen } from "lucide-react";
+import { LogOut, GraduationCap, DollarSign, ShieldAlert, BookOpen, Users } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import NotificationBell from "./NotificationBell";
 
@@ -39,43 +39,64 @@ export default function Navbar() {
           {isAuthenticated && (
             <div className="hidden md:flex items-center gap-6">
               
-              {/* 1️⃣ لينك الأدمن */}
+              {/* 1️⃣ روابط الأدمن */}
               {user?.role === "ADMIN" && (
-                <Link 
-                  href="/admin" 
-                  className={`text-sm font-medium flex items-center gap-1.5 transition-colors ${pathname === '/admin' ? 'text-copper' : 'text-copper/70 hover:text-copper'}`}
-                >
-                  <ShieldAlert size={16} />
-                  Admin Dashboard
-                </Link>
+                <>
+                  <Link 
+                    href="/admin" 
+                    className={`text-sm font-medium flex items-center gap-1.5 transition-colors ${pathname === '/admin' ? 'text-copper' : 'text-copper/70 hover:text-copper'}`}
+                  >
+                    <ShieldAlert size={16} />
+                    Admin Dashboard
+                  </Link>
+                  <Link 
+                    href="/admin/enrollments" 
+                    className={`text-sm font-medium flex items-center gap-1.5 transition-colors ${pathname === '/admin/enrollments' ? 'text-copper' : 'text-copper/70 hover:text-copper'}`}
+                  >
+                    <Users size={16} />
+                    Enrollments
+                  </Link>
+                </>
               )}
 
-              {/* 2️⃣ لينك كشف الحساب (للمعلم والأدمن) */}
-              {(user?.role === "INSTRUCTOR" || user?.role === "ADMIN") && (
-                <Link 
-                  href="/instructor/revenue" 
-                  className={`text-sm font-medium flex items-center gap-1.5 transition-colors ${pathname === '/instructor/revenue' ? 'text-copper' : 'text-fog hover:text-white'}`}
-                >
-                  <DollarSign size={16} />
-                  My Revenue
-                </Link>
+              {/* 2️⃣ روابط المعلم */}
+              {user?.role === "INSTRUCTOR" && (
+                <>
+                  <Link 
+                    href="/instructor/revenue" 
+                    className={`text-sm font-medium flex items-center gap-1.5 transition-colors ${pathname === '/instructor/revenue' ? 'text-copper' : 'text-fog hover:text-white'}`}
+                  >
+                    <DollarSign size={16} />
+                    My Revenue
+                  </Link>
+                  <Link 
+                    href="/courses" 
+                    className={`text-sm font-medium transition-colors ${pathname === '/courses' ? 'text-white' : 'text-fog hover:text-white'}`}
+                  >
+                    Browse Catalog
+                  </Link>
+                </>
               )}
 
-              {/* 3️⃣ لينكات الكورسات (لكل الرتب) */}
-              <Link 
-                href="/my-courses" 
-                className={`text-sm font-medium flex items-center gap-1.5 transition-colors ${pathname === '/my-courses' ? 'text-white' : 'text-fog hover:text-white'}`}
-              >
-                <BookOpen size={16} />
-                My Courses
-              </Link>
+              {/* 3️⃣ روابط الطالب */}
+              {user?.role === "USER" && (
+                <>
+                  <Link 
+                    href="/my-courses" 
+                    className={`text-sm font-medium flex items-center gap-1.5 transition-colors ${pathname === '/my-courses' ? 'text-white' : 'text-fog hover:text-white'}`}
+                  >
+                    <BookOpen size={16} />
+                    My Courses
+                  </Link>
+                  <Link 
+                    href="/courses" 
+                    className={`text-sm font-medium transition-colors ${pathname === '/courses' ? 'text-white' : 'text-fog hover:text-white'}`}
+                  >
+                    Browse Catalog
+                  </Link>
+                </>
+              )}
 
-              <Link 
-                href="/courses" 
-                className={`text-sm font-medium transition-colors ${pathname === '/courses' ? 'text-white' : 'text-fog hover:text-white'}`}
-              >
-                Browse Catalog
-              </Link>
             </div>
           )}
         </div>
