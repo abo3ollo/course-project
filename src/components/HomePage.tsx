@@ -22,7 +22,7 @@ export default function HomePage() {
         try {
           if (user?.role === "ADMIN") {
             // ممكن نعمل API مخصص للأدمن أو نستخدم اللي موجود
-            const res = await api.get("/admin/dashboard-stats"); 
+            const res = await api.get("/courses/admin/dashboard-stats"); 
             setStats(res.data.data);
           } else if (user?.role === "INSTRUCTOR") {
             const res = await api.get("/courses/instructor-stats");

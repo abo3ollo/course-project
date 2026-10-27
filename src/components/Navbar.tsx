@@ -5,7 +5,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useAuth } from "../context/AuthContext";
-import { LogOut, GraduationCap, DollarSign } from "lucide-react";
+import { LogOut, GraduationCap, DollarSign, ShieldAlert, BookOpen } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import NotificationBell from "./NotificationBell";
 
@@ -27,7 +27,7 @@ export default function Navbar() {
         
         {/* Logo & Main Links */}
         <div className="flex items-center gap-10">
-          {/* اللوجو: خط Serif فخم مع أيقونة نحاسية (Copper) */}
+          {/* اللوجو */}
           <Link href="/" className="flex items-center gap-3 text-2xl font-serif text-white tracking-wide group">
             <div className="bg-carbon border border-graphite text-copper p-2 rounded-xl group-hover:border-copper transition-colors">
               <GraduationCap size={22} />
@@ -37,32 +37,44 @@ export default function Navbar() {
 
           {/* روابط التنقل (Nav Links) */}
           {isAuthenticated && (
-            <div className="hidden md:flex items-center gap-8">
+            <div className="hidden md:flex items-center gap-6">
+              
+              {/* 1️⃣ لينك الأدمن */}
               {user?.role === "ADMIN" && (
                 <Link 
                   href="/admin" 
-                  className={`text-sm font-medium transition-colors ${pathname === '/admin' ? 'text-copper' : 'text-copper/70 hover:text-copper'}`}
+                  className={`text-sm font-medium flex items-center gap-1.5 transition-colors ${pathname === '/admin' ? 'text-copper' : 'text-copper/70 hover:text-copper'}`}
                 >
+                  <ShieldAlert size={16} />
                   Admin Dashboard
                 </Link>
               )}
+
+              {/* 2️⃣ لينك كشف الحساب (للمعلم والأدمن) */}
+              {(user?.role === "INSTRUCTOR" || user?.role === "ADMIN") && (
+                <Link 
+                  href="/instructor/revenue" 
+                  className={`text-sm font-medium flex items-center gap-1.5 transition-colors ${pathname === '/instructor/revenue' ? 'text-copper' : 'text-fog hover:text-white'}`}
+                >
+                  <DollarSign size={16} />
+                  My Revenue
+                </Link>
+              )}
+
+              {/* 3️⃣ لينكات الكورسات (لكل الرتب) */}
               <Link 
                 href="/my-courses" 
-                className={`text-sm font-medium transition-colors ${pathname === '/my-courses' ? 'text-white' : 'text-fog hover:text-white'}`}
+                className={`text-sm font-medium flex items-center gap-1.5 transition-colors ${pathname === '/my-courses' ? 'text-white' : 'text-fog hover:text-white'}`}
               >
+                <BookOpen size={16} />
                 My Courses
               </Link>
+
               <Link 
                 href="/courses" 
                 className={`text-sm font-medium transition-colors ${pathname === '/courses' ? 'text-white' : 'text-fog hover:text-white'}`}
               >
                 Browse Catalog
-              </Link>
-              <Link 
-                href="/resources" 
-                className={`text-sm font-medium transition-colors ${pathname === '/resources' ? 'text-white' : 'text-fog hover:text-white'}`}
-              >
-                Resources
               </Link>
             </div>
           )}
@@ -81,17 +93,8 @@ export default function Navbar() {
           ) : isAuthenticated ? (
             <>
               <NotificationBell />
-              {/* ✅ ضيف اللينك ده للمدرس والأدمن */}
-              {(user?.role === "INSTRUCTOR" || user?.role === "ADMIN") && (
-                <Link 
-                  href="/instructor/revenue" 
-                  className="text-sm font-medium text-copper hover:text-copper/80 transition-colors flex items-center gap-1"
-                >
-                  <DollarSign size={16} />
-                  My Revenue
-                </Link>
-              )}
-              {/* بروفايل اليوزر: خلفية داكنة بحدود خفيفة */}
+              
+              {/* بروفايل اليوزر */}
               <Link
                 href="/profile"
                 className="flex items-center gap-3 px-3 py-1.5 rounded-full border border-graphite bg-carbon hover:border-slate transition-colors"
@@ -116,11 +119,11 @@ export default function Navbar() {
                 </span>
               </Link>
 
-              {/* زرار تسجيل الخروج: شفاف بحدود رمادية */}
+              {/* زرار تسجيل الخروج */}
               <Button
                 onClick={handleLogout}
                 variant="outline"
-                className="rounded-full bg-transparent text-fog border-slate hover:text-white hover:bg-carbon hover:border-smoke transition-all"
+                className="rounded-full bg-transparent text-fog border-slate hover:text-white hover:bg-carbon hover:border-smoke transition-all hidden sm:flex"
               >
                 <LogOut size={16} className="mr-2" />
                 Logout
@@ -131,7 +134,6 @@ export default function Navbar() {
               <Link href="/login" className="text-sm font-medium text-fog hover:text-white transition-colors">
                 Login
               </Link>
-              {/* زرار أبيض ممتلئ (Primary Action) زي تصميم Slash */}
               <Link href="/register">
                 <Button className="bg-white text-black hover:bg-gray-200 rounded-full font-medium px-6">
                   Sign Up
