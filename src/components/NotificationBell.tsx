@@ -40,7 +40,7 @@ export default function NotificationBell() {
   const handleMarkAsRead = async (id: string) => {
     try {
       await api.patch(`/notifications/${id}/read`);
-      
+
       // تحديث الحالة في الواجهة فوراً
       setNotifications((prev) =>
         prev.map((n) => (n._id === id ? { ...n, isRead: true } : n))
@@ -64,17 +64,11 @@ export default function NotificationBell() {
 
   return (
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
-      <DropdownMenuTrigger>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="relative text-fog hover:text-white hover:bg-carbon rounded-full"
-        >
-          <Bell size={20} />
-          {unreadCount > 0 && (
-            <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-copper rounded-full border-2 border-obsidian"></span>
-          )}
-        </Button>
+      <DropdownMenuTrigger className="relative p-2 rounded-full text-fog hover:text-white hover:bg-carbon transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-copper">
+        <Bell size={20} />
+        {unreadCount > 0 && (
+          <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-copper rounded-full border-2 border-obsidian"></span>
+        )}
       </DropdownMenuTrigger>
 
       <DropdownMenuContent
@@ -111,9 +105,8 @@ export default function NotificationBell() {
                 }}
               >
                 <DropdownMenuItem
-                  className={`flex items-start gap-3 p-3 rounded-md cursor-pointer transition-colors ${
-                    !notif.isRead ? "bg-carbon/60" : "hover:bg-carbon/40"
-                  }`}
+                  className={`flex items-start gap-3 p-3 rounded-md cursor-pointer transition-colors ${!notif.isRead ? "bg-carbon/60" : "hover:bg-carbon/40"
+                    }`}
                 >
                   {/* صورة المرسل أو أيقونة افتراضية */}
                   {notif.sender?.avatar ? (
@@ -136,7 +129,7 @@ export default function NotificationBell() {
                       {new Date(notif.createdAt).toLocaleDateString()}
                     </p>
                   </div>
-                  
+
                   {/* نقطة زرقاء/نحاسية لو الإشعار مش مقروء */}
                   {!notif.isRead && (
                     <span className="w-2 h-2 rounded-full bg-copper mt-1 shrink-0"></span>

@@ -5,7 +5,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useAuth } from "../context/AuthContext";
-import { LogOut, GraduationCap } from "lucide-react";
+import { LogOut, GraduationCap, DollarSign } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import NotificationBell from "./NotificationBell";
 
@@ -81,6 +81,16 @@ export default function Navbar() {
           ) : isAuthenticated ? (
             <>
               <NotificationBell />
+              {/* ✅ ضيف اللينك ده للمدرس والأدمن */}
+              {(user?.role === "INSTRUCTOR" || user?.role === "ADMIN") && (
+                <Link 
+                  href="/instructor/revenue" 
+                  className="text-sm font-medium text-copper hover:text-copper/80 transition-colors flex items-center gap-1"
+                >
+                  <DollarSign size={16} />
+                  My Revenue
+                </Link>
+              )}
               {/* بروفايل اليوزر: خلفية داكنة بحدود خفيفة */}
               <Link
                 href="/profile"
