@@ -19,6 +19,7 @@ export default function CourseDetailsPage() {
 
   const [course, setCourse] = useState<Course | null>(null);
   const [isAuthorized, setIsAuthorized] = useState(false);
+  const [enrollmentStatus, setEnrollmentStatus] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [newRating, setNewRating] = useState(5);
@@ -31,6 +32,7 @@ export default function CourseDetailsPage() {
         const res = await api.get(`/courses/${id}`);
         setCourse(res.data.data.course);
         setIsAuthorized(res.data.data.isAuthorized);
+        setEnrollmentStatus(res.data.data.enrollmentStatus);
       } catch (err) {
         console.error("Failed to fetch course", err);
       } finally {
@@ -182,9 +184,22 @@ export default function CourseDetailsPage() {
                     You are already enrolled in this course.
                   </p>
                 </div>
+              ) : enrollmentStatus === "pending" ? (
+                // ✅ حالة الطلب المعلق (مستني موافقة الأدمن)
+                <div className="space-y-3 mb-6">
+                  <Button
+                    disabled
+                    className="w-full bg-yellow-500/10 text-yellow-500 border border-yellow-500/30 h-12 text-lg rounded-full font-medium cursor-not-allowed opacity-100"
+                  >
+                    Pending Admin Approval
+                  </Button>
+                  <p className="text-xs text-center text-steel">
+                    Your receipt is being reviewed. Please wait.
+                  </p>
+                </div>
               ) : (
+                // زرار الدفع العادي
                 <>
-                  {/* ✅ الزرار بقى بينقل لصفحة الدفع */}
                   <Button
                     onClick={handleEnrollClick}
                     className="w-full bg-white text-black hover:bg-gray-200 h-12 text-lg rounded-full font-medium mb-4 transition-colors"
@@ -283,7 +298,7 @@ export default function CourseDetailsPage() {
         </div>
       </div>
 
-       {/* Reviews Section */}
+      {/* Reviews Section */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="mt-16">
           <div className="flex items-center gap-4 mb-8">
