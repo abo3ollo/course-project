@@ -17,24 +17,24 @@ export default function LearnPage() {
   const [course, setCourse] = useState<Course | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [activeVideo, setActiveVideo] = useState<any>(null);
-  
+
   // ✅ State جديدة لحفظ الأقسام اللي اكتملت
   const [completedSections, setCompletedSections] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     const fetchCourse = async () => {
-            try {
+      try {
         const res = await api.get(`/courses/${id}`);
-        
+
         // ✅ بناخد البيانات الجديدة
         const courseData = res.data.data.course;
-        const userCompletedSections = res.data.data.completedSections || []; 
-        
+        const userCompletedSections = res.data.data.completedSections || [];
+
         setCourse(courseData);
 
         // ✅ بنحط الأقسام المكتملة في الـ State
-        setCompletedSections(userCompletedSections); 
+        setCompletedSections(userCompletedSections);
 
         // نختار أول فيديو يتشغل أوتوماتيك
         if (courseData.sections && courseData.sections.length > 0) {
@@ -42,10 +42,10 @@ export default function LearnPage() {
           const firstUncompleted = courseData.sections.find(
             (s: any) => s.videoUrl && !userCompletedSections.includes(s._id)
           );
-          
+
           // 2. بنجيب أول فيديو متاح بشكل عام (احتياطي)
           const firstSectionWithVideo = courseData.sections.find((s: any) => s.videoUrl);
-          
+
           if (firstUncompleted) {
             setActiveVideo(firstUncompleted);
           } else if (firstSectionWithVideo) {
@@ -53,7 +53,7 @@ export default function LearnPage() {
           }
         }
       } catch (err) {
-        router.push(`/courses/${id}`); 
+        router.push(`/courses/${id}`);
       } finally {
         setIsLoading(false);
       }
@@ -69,7 +69,7 @@ export default function LearnPage() {
     setIsSubmitting(true);
     try {
       await api.post(`/courses/${id}/sections/${activeVideo._id}/complete`);
-      
+
       // بنحدث الـ State عشان العلامة تظهر فوراً
       setCompletedSections((prev) => [...prev, activeVideo._id]);
       toast.success("Marked as completed!");
@@ -87,15 +87,15 @@ export default function LearnPage() {
       </div>
     );
   }
-  
+
   if (!course) return <div className="h-screen bg-obsidian text-white flex items-center justify-center">Course not found or Unauthorized.</div>;
 
   return (
     <div className="h-screen bg-obsidian text-bone font-sans flex flex-col md:flex-row overflow-hidden selection:bg-copper selection:text-white">
-      
+
       {/* ── Sidebar (الأقسام) ── */}
       <div className="w-full md:w-80 bg-onyx border-r border-graphite flex flex-col h-full order-2 md:order-1 shrink-0">
-        
+
         {/* Sidebar Header */}
         <div className="p-5 border-b border-graphite flex items-start justify-between bg-carbon">
           <div>
@@ -123,20 +123,19 @@ export default function LearnPage() {
                   {section.videoUrl ? (
                     <button
                       onClick={() => setActiveVideo(section)}
-                      className={`w-full text-left px-3 py-2.5 rounded-lg text-sm flex items-center justify-between gap-3 transition-colors cursor-pointer ${
-                        activeVideo?._id === section._id 
-                          ? 'bg-copper/10 text-copper border-l-2 border-copper' 
+                      className={`w-full text-left px-3 py-2.5 rounded-lg text-sm flex items-center justify-between gap-3 transition-colors cursor-pointer ${activeVideo?._id === section._id
+                          ? 'bg-copper/10 text-copper border-l-2 border-copper'
                           : 'text-bone hover:bg-graphite border-l-2 border-transparent'
-                      }`}
+                        }`}
                     >
                       <div className="flex items-center gap-3">
-                         {/* ✅ لو الفيديو مكتمل، بتظهر علامة صح، لو لأ بيظهر أيقونة تشغيل */}
-                         {isCompleted ? (
-                            <CheckCircle2 size={16} className="text-green-500" />
-                         ) : (
-                            <PlayCircle size={16} className={activeVideo?._id === section._id ? "text-copper" : "text-steel"} />
-                         )}
-                         <span className="line-clamp-1">{section.introVideoTitle || section.title}</span>
+                        {/* ✅ لو الفيديو مكتمل، بتظهر علامة صح، لو لأ بيظهر أيقونة تشغيل */}
+                        {isCompleted ? (
+                          <CheckCircle2 size={16} className="text-green-500" />
+                        ) : (
+                          <PlayCircle size={16} className={activeVideo?._id === section._id ? "text-copper" : "text-steel"} />
+                        )}
+                        <span className="line-clamp-1">{section.introVideoTitle || section.title}</span>
                       </div>
                     </button>
                   ) : (
@@ -154,18 +153,15 @@ export default function LearnPage() {
       {/* ── Video Player (المشاهدة) ── */}
       <div className="flex-1 flex flex-col h-full order-1 md:order-2 overflow-y-auto bg-obsidian">
         {activeVideo ? (
-          <div className="w-full aspect-video bg-black flex items-center justify-center border-b border-graphite">
-            <video 
-              key={activeVideo._id}
-              src={activeVideo.videoUrl} 
-              controls 
-              autoPlay
-              className="w-full max-h-[75vh]"
-              // ✅ لو حبيت تعلمه اوتوماتيك لما الفيديو يخلص:
-              // onEnded={markAsCompleted}
-            >
-              Your browser does not support the video tag.
-            </video>
+          <div className="w-full aspect-video bg-black flex items-center justify-center border-b border-graphite relative">
+            {/* ✅ مشغل Bunny Stream */}
+            <iframe
+              src={activeVideo.videoUrl}
+              loading="lazy"
+              className="absolute top-0 left-0 w-full h-full"
+              allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
+              allowFullScreen
+            ></iframe>
           </div>
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center text-steel bg-obsidian border-b border-graphite">
@@ -177,21 +173,20 @@ export default function LearnPage() {
         {/* تفاصيل الفيديو */}
         {activeVideo && (
           <div className="p-8 md:p-10 max-w-4xl">
-            
+
             {/* ✅ شريط العنوان وزرار الإكمال */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
               <h1 className="font-serif text-3xl md:text-4xl text-white">
                 {activeVideo.introVideoTitle || activeVideo.title}
               </h1>
 
-              <Button 
-                onClick={markAsCompleted} 
+              <Button
+                onClick={markAsCompleted}
                 disabled={completedSections.includes(activeVideo._id) || isSubmitting}
-                className={`rounded-full px-6 transition-all ${
-                  completedSections.includes(activeVideo._id) 
-                    ? 'bg-green-500/20 text-green-500 border border-green-500/30 cursor-default' 
+                className={`rounded-full px-6 transition-all ${completedSections.includes(activeVideo._id)
+                    ? 'bg-green-500/20 text-green-500 border border-green-500/30 cursor-default'
                     : 'bg-white text-black hover:bg-gray-200'
-                }`}
+                  }`}
               >
                 {completedSections.includes(activeVideo._id) ? (
                   <><CheckCircle2 className="w-4 h-4 mr-2" /> Completed</>
@@ -204,7 +199,7 @@ export default function LearnPage() {
             <p className="text-fog text-lg leading-relaxed mb-6">
               {activeVideo.learningObjective}
             </p>
-            
+
             <div className="inline-flex items-center gap-2 text-sm text-copper bg-copper/10 px-4 py-2 rounded-full border border-copper/20">
               <span className="font-semibold tracking-wider uppercase text-xs">Duration</span>
               <span className="w-1 h-1 rounded-full bg-copper/50"></span>

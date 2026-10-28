@@ -1,6 +1,6 @@
-بناءً على كل اللي عملناه في الفترة الأخيرة (نظام الدفع اليدوي، لوحة تحكم الأدمن، الإشعارات، وكشف حساب المدرس)، تم تحديث ملف `PROJECT_SUMMARY.md` بالكامل.
+بناءً على التغييرات الأخيرة (التحول من Cloudinary إلى Bunny Stream للفيديوهات، وتحديث الـ Navbar حسب الرتب، وإضافة صفحة الأرباح)، تم تحديث ملف `PROJECT_SUMMARY.md` بالكامل. 
 
-انسخ الملف ده كامل واحفظه عشان تستخدمه في أي شات جديد:
+انسخ الملف ده كامل واحفظه عندك:
 
 ```markdown
 # 🎓 Courses Platform — Project Summary
@@ -17,7 +17,7 @@
 - **Backend:** Node.js + Express + MongoDB (Mongoose)
 - **Frontend:** Next.js 15 (App Router) + TypeScript + Tailwind + shadcn/ui
 - **Auth:** JWT في httpOnly cookies
-- **Storage:** Cloudinary (للصور والفيديوهات)
+- **Storage:** Cloudinary (للصور والإيصالات) + Bunny Stream (للفيديوهات)
 - **Payments:** Manual Payment (رفع إيصال + موافقة الأدمن)
 - **Deploy:** Vercel (Backend + Frontend)
 
@@ -35,11 +35,11 @@
 ```text
 Backend/
 ├── config/
-│   └── cloudinary.js             # إعداد Cloudinary
+│   └── cloudinary.js             # إعداد Cloudinary (للصور فقط)
 ├── controllers/
 │   ├── auth.controllers.js       # register, login, logout, logoutAll, forgot, reset, verifyEmail, resendVerification
 │   ├── users.controllers.js      # getAllUsers, getMe, updateMe, changePassword, uploadAvatar, updateUserRole, deleteUser
-│   ├── courses.controllers.js    # getAllCourse (search/filter), getSingleCourse, CreateCourse, updateCourse, deleteCourse, enrollCourse, getMyCourses, getDashboardStats, addSection, updateSection, deleteSection, completeSection, getInstructorStats, getAdminStats, getPendingEnrollments, updateEnrollmentStatus, getInstructorRevenue
+│   ├── courses.controllers.js    # getAllCourse, getSingleCourse, CreateCourse, updateCourse, deleteCourse, enrollCourse, getMyCourses, getDashboardStats, addSection (Bunny), updateSection (Bunny), deleteSection, completeSection, getInstructorStats, getAdminStats, getPendingEnrollments, updateEnrollmentStatus, getInstructorRevenue, getAllInstructorsFinancials, getBunnyUploadSignature
 │   ├── reviews.controllers.js    # createReview, getCourseReviews
 │   └── notifications.controllers.js # getMyNotifications, markAsRead, markAllAsRead
 ├── models/
@@ -51,7 +51,7 @@ Backend/
 ├── routes/
 │   ├── auth.routes.js            # /api/auth/*
 │   ├── user.routes.js            # /api/users/*
-│   ├── courses.routes.js         # /api/courses/* (includes dashboard, admin, instructor stats)
+│   ├── courses.routes.js         # /api/courses/* (includes dashboard, admin, instructor stats, bunny signature)
 │   ├── reviews.routes.js         # /api/courses/:courseId/reviews/*
 │   └── notifications.routes.js   # /api/notifications/*
 ├── middlewares/
@@ -61,7 +61,7 @@ Backend/
 │   ├── asyncWrapper.js           # error wrapper
 │   ├── validationsSchema.js      # express-validator
 │   ├── rateLimiter.js            # rate limiting
-│   └── cloudinaryUpload.js       # multer + cloudinaryStorage
+│   └── cloudinaryUpload.js       # multer + cloudinaryStorage (للصور والإيصالات فقط)
 ├── utils/
 │   ├── appError.js
 │   ├── httpStatusText.js
@@ -71,7 +71,7 @@ Backend/
 ├── index.js                      # + MongoDB connection cache + 100mb body limit
 ├── vercel.json                   # إعدادات Vercel
 ├── package.json
-└── .env
+└── .env                          # يحتوي على CLOUDINARY_* و BUNNY_LIBRARY_ID و BUNNY_API_KEY
 ```
 
 ### Frontend (`course-project-full`)
@@ -91,7 +91,8 @@ course-project-full/
 │   │   │   ├── my-courses/page.tsx       # Enrolled Courses (with Progress Bar & Payment Status)
 │   │   │   ├── admin/
 │   │   │   │   ├── page.tsx              # Admin Dashboard
-│   │   │   │   └── enrollments/page.tsx  # Pending Enrollments (Approve/Reject)
+│   │   │   │   ├── enrollments/page.tsx  # Pending Enrollments (Approve/Reject)
+│   │   │   │   └── financials/page.tsx   # Instructors Financials
 │   │   │   ├── instructor/
 │   │   │   │   └── revenue/page.tsx      # Instructor Revenue
 │   │   │   └── courses/
@@ -99,10 +100,10 @@ course-project-full/
 │   │   │       ├── [id]/
 │   │   │       │   ├── page.tsx          # Course Details (Pending Approval status)
 │   │   │       │   ├── checkout/page.tsx # Payment Page (Upload Receipt)
-│   │   │       │   └── learn/page.tsx    # Learning Page (Video Player + Progress)
+│   │   │       │   └── learn/page.tsx    # Learning Page (Bunny Stream Player + Progress)
 │   │   │       ├── create/
 │   │   │       │   ├── page.tsx          # Create Course
-│   │   │       │   └── [courseId]/sections/new/page.tsx # Add Section
+│   │   │       │   └── [courseId]/sections/new/page.tsx # Add Section (Bunny Upload)
 │   │   │       ├── edit/[courseId]/page.tsx # Edit Course details
 │   │   │       └── manage/
 │   │   │           └── [courseId]/
@@ -162,7 +163,7 @@ course-project-full/
 | PATCH | `/api/users/:userId/role` | ✅ | ADMIN | تغيير رتبة المستخدم |
 | DELETE | `/api/users/:userId` | ✅ | ADMIN | حذف مستخدم |
 
-### Backend — Courses, Sections, Reviews & Progress ✅
+### Backend — Courses, Sections, Reviews, Payments & Bunny Stream ✅
 | Method | Endpoint | Auth | Role | Description |
 |---|---|---|---|---|
 | GET | `/api/courses` | ❌ | any | قائمة الكورسات (تدعم الفلترة والبحث) |
@@ -173,8 +174,9 @@ course-project-full/
 | POST | `/api/courses/:id/enroll` | ✅ | any | التسجيل في كورس (مع رفع إيصال الدفع) |
 | GET | `/api/courses/my-courses` | ✅ | any | كورسات الطالب (مع نسبة التقدم وحالة الدفع) |
 | GET | `/api/courses/dashboard-stats` | ✅ | any | إحصائيات لوحة تحكم الطالب |
-| POST | `/api/courses/:id/sections` | ✅ | Instructor/Admin | إضافة قسم (مع فيديو) |
-| PATCH | `/api/courses/:id/sections/:sectionId` | ✅ | Instructor/Admin | تعديل قسم |
+| POST | `/api/courses/bunny-upload-signature` | ✅ | Instructor/Admin | جلب تصريح الرفع من Bunny Stream |
+| POST | `/api/courses/:id/sections` | ✅ | Instructor/Admin | إضافة قسم (يستقبل videoId) |
+| PATCH | `/api/courses/:id/sections/:sectionId` | ✅ | Instructor/Admin | تعديل قسم (يستقبل videoId) |
 | DELETE | `/api/courses/:id/sections/:sectionId` | ✅ | Instructor/Admin | حذف قسم |
 | POST | `/api/courses/:id/sections/:sectionId/complete` | ✅ | any | تعليم القسم كمكتمل |
 | POST | `/api/courses/:id/reviews` | ✅ | any | إضافة تقييم (للمشتركين فقط) |
@@ -184,6 +186,7 @@ course-project-full/
 | GET | `/api/courses/admin/dashboard-stats` | ✅ | ADMIN | إحصائيات لوحة تحكم الأدمن |
 | GET | `/api/courses/admin/pending-enrollments` | ✅ | ADMIN | طلبات الاشتراك المعلقة |
 | PATCH | `/api/courses/admin/enrollments/:enrollmentId` | ✅ | ADMIN | الموافقة أو رفض الاشتراك |
+| GET | `/api/courses/admin/instructors-financials` | ✅ | ADMIN | تفاصيل مالية لكل معلم |
 | GET | `/api/notifications` | ✅ | any | جلب الإشعارات |
 | PATCH | `/api/notifications/:id/read` | ✅ | any | تعليم إشعار كمقروء |
 | PATCH | `/api/notifications/read-all` | ✅ | any | تعليم كل الإشعارات كمقروءة |
@@ -194,16 +197,17 @@ course-project-full/
 - ✅ Profile Page (Dark Theme).
 - ✅ Courses Catalog (Grid view + Ratings Stars + Search & Filtering).
 - ✅ Course Details (Handles unauthorized access, Pending Payment status, Reviews).
-- ✅ Course Management (Create, Edit, Manage Sections, Add/Edit Sections).
+- ✅ Course Management (Create, Edit, Manage Sections).
+- ✅ Add/Edit Section using **Bunny Stream** (Direct Client-Side Upload with Progress Bar).
+- ✅ Learning Page (`/courses/[id]/learn`): Bunny Stream Iframe Player + "Mark as Complete".
 - ✅ My Courses Page (Grid layout + Progress Bar + Payment Status Badges).
-- ✅ Learning Page (`/courses/[id]/learn`): YouTube-like interface + "Mark as Complete".
 - ✅ Home Page (Divided into 3 separate components: StudentDashboard, InstructorDashboard, AdminDashboard).
-- ✅ Admin Dashboard (`/admin` & `/admin/enrollments`): Manage users and approve payments.
-- ✅ Instructor Revenue Page (`/instructor/revenue`): View earnings and platform fees.
-- ✅ Payment Checkout Page (`/courses/[id]/checkout`): Upload receipt.
-- ✅ NotificationBell Component (Real-time notifications).
+- ✅ Admin Dashboard (`/admin`, `/admin/enrollments`, `/admin/financials`).
+- ✅ Instructor Revenue Page (`/instructor/revenue`).
+- ✅ Payment Checkout Page (`/courses/[id]/checkout`).
+- ✅ NotificationBell Component.
 - ✅ Middleware Protection.
-- ✅ Next.js Rewrites + 100MB body limit.
+- ✅ Next.js Rewrites.
 
 ---
 
@@ -211,11 +215,11 @@ course-project-full/
 
 1. **Auth:** JWT في httpOnly cookie. لا يوجد localStorage نهائيًا.
 2. **Deploy:** Vercel للفرونت والباك إند (Next.js Rewrites proxy).
-3. **Media:** Cloudinary (`multer-storage-cloudinary`) تدعم الصور والفيديوهات.
-4. **Manual Payments:** الطالب يرفع إيصال -> الأدمن يوافق -> يتم تفعيل الكورس.
-5. **Revenue Split:** 15% للمنصة، 85% للمدرس (يتم حسابها برمجياً عند الدفع).
-6. **UI/UX:** تصميم Dark Theme (Slash) مستوحى من منصات التكنولوجيا المالية.
-7. **Upload Limits:** الـ body limit 100MB لدعم رفع الفيديوهات.
+3. **Media (Images):** Cloudinary (`multer-storage-cloudinary`).
+4. **Media (Videos):** Bunny Stream (Client-side upload using TUS, stored via `videoId`).
+5. **Manual Payments:** الطالب يرفع إيصال -> الأدمن يوافق -> يتم تفعيل الكورس.
+6. **Revenue Split:** 15% للمنصة، 85% للمدرس.
+7. **UI/UX:** تصميم Dark Theme (Slash).
 8. **Progress Tracking:** بيتم حفظ الأقسام المكتملة في الـ Enrollment Model.
 
 ---
@@ -225,7 +229,7 @@ course-project-full/
 1. **صفحة 404 مخصصة (Not Found Page)**.
 2. **تحسين الـ Responsive Design** (للموبايل).
 3. **إضافة Refresh Tokens** لتحسين الأمان.
-4. **نظام الدفع الإلكتروني (Stripe / Paymob)** (بديل للدفع اليدوي في المستقبل).
+4. **نظام الدفع الإلكتروني (Stripe / Paymob)**.
 
 ---
 
@@ -233,9 +237,9 @@ course-project-full/
 
 **لما تفتح chat جديد، قول:**
 > "المشروع: Courses Platform (UI/UX: Slash Dark Theme).
-> Backend: Express + MongoDB + JWT + Cloudinary + Manual Payments (Vercel).
+> Backend: Express + MongoDB + JWT + Cloudinary (Images) + Bunny Stream (Videos) + Manual Payments (Vercel).
 > Frontend: Next.js 15 + TS + shadcn (Vercel).
-> Auth, Profile, Courses, Sections, Enrollment, Learning, Admin Dashboard, Reviews, Search/Filter, Progress Tracking, Notifications, Manual Payments, Instructor Revenue خلصوا بالكامل.
+> Auth, Profile, Courses, Sections, Enrollment, Learning, Admin Dashboard, Reviews, Search/Filter, Progress Tracking, Notifications, Manual Payments, Instructor Revenue, Bunny Stream Integration خلصوا بالكامل.
 > عايز نكمل في [404 Page / Responsive Design / Refresh Tokens]."
 
 **وأرسل الملخص ده.**
