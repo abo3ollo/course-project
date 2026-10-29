@@ -2,25 +2,29 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 export function middleware(request: NextRequest) {
-  // ✅ اقرأ الكوكي من الـ request
   const token = request.cookies.get("token")?.value;
+  const refreshToken = request.cookies.get("refreshToken")?.value;
   const { pathname } = request.nextUrl;
 
   // ── الصفحات المحمية ──
-  const protectedPaths = ["/profile", "/courses/create", "/my-courses"];
+  const protectedPaths = [
+    "/profile", 
+    "/courses/create", 
+    "/my-courses", 
+    "/admin", 
+    "/instructor",
+    "/courses/manage"
+  ];
   const isProtected = protectedPaths.some((p) => pathname.startsWith(p));
 
-  if (isProtected && !token) {
+  // لو الصفحة محمية ومفيش توكن خالص (لا Access ولا Refresh)، نطرده للـ Login
+  if (isProtected && !token && !refreshToken) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
-  // ── صفحات الـ auth (لو داخل، مش محتاج يفتحها) ──
-  const authPaths = ["/login", "/register", "/forgot-password" , "/reset-password"];
-  const isAuthPage = authPaths.some((p) => pathname.startsWith(p));
-
-  if (isAuthPage && token) {
-    return NextResponse.redirect(new URL("/", request.url));
-  }
+  // ── صفحات الـ Auth (Login, Register, etc) ──
+  // ❌ شيلنا شرط الـ Redirect من هنا عشان نمنع الـ Loop
+  // الـ AuthContext هو اللي هيتصرف لو المستخدم مسجل
 
   return NextResponse.next();
 }
@@ -30,9 +34,8 @@ export const config = {
     "/profile/:path*",
     "/courses/create/:path*",
     "/my-courses/:path*",
-    "/login",
-    "/register",
-    "/forgot-password",
-    "/reset-password", 
+    "/admin/:path*",
+    "/instructor/:path*",
+    "/courses/manage/:path*",
   ],
 };
