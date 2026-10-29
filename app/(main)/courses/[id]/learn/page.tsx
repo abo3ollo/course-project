@@ -18,38 +18,55 @@ export default function LearnPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [activeVideo, setActiveVideo] = useState<any>(null);
 
-  // ✅ State جديدة لحفظ الأقسام اللي اكتملت
+  // ✅ States لحفظ الأقسام المكتملة
   const [completedSections, setCompletedSections] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // ✅ States خاصة بالفيديو الآمن
+  const [signedVideoUrl, setSignedVideoUrl] = useState<string | null>(null);
+  const [isVideoLoading, setIsVideoLoading] = useState(false);
+
+  // دالة جلب اللينك الموقع من الباك إند
+  const loadSecureVideo = async (section: any) => {
+    if (!section.videoId) return; // لو الفيديو مش مرفوع
+
+    setIsVideoLoading(true);
+    setSignedVideoUrl(null);
+
+    try {
+      const res = await api.get(`/courses/signed-video/${section.videoId}`);
+      setSignedVideoUrl(res.data.data.signedUrl);
+    } catch (err: any) {
+      toast.error("Failed to load secure video");
+    } finally {
+      setIsVideoLoading(false);
+    }
+  };
 
   useEffect(() => {
     const fetchCourse = async () => {
       try {
         const res = await api.get(`/courses/${id}`);
 
-        // ✅ بناخد البيانات الجديدة
         const courseData = res.data.data.course;
         const userCompletedSections = res.data.data.completedSections || [];
 
         setCourse(courseData);
-
-        // ✅ بنحط الأقسام المكتملة في الـ State
         setCompletedSections(userCompletedSections);
 
         // نختار أول فيديو يتشغل أوتوماتيك
         if (courseData.sections && courseData.sections.length > 0) {
-          // 1. بنجيب أول فيديو مش مكتمل
           const firstUncompleted = courseData.sections.find(
-            (s: any) => s.videoUrl && !userCompletedSections.includes(s._id)
+            (s: any) => s.videoId && !userCompletedSections.includes(s._id)
           );
+          const firstSectionWithVideo = courseData.sections.find((s: any) => s.videoId);
 
-          // 2. بنجيب أول فيديو متاح بشكل عام (احتياطي)
-          const firstSectionWithVideo = courseData.sections.find((s: any) => s.videoUrl);
+          const initialVideo = firstUncompleted || firstSectionWithVideo;
 
-          if (firstUncompleted) {
-            setActiveVideo(firstUncompleted);
-          } else if (firstSectionWithVideo) {
-            setActiveVideo(firstSectionWithVideo);
+          if (initialVideo) {
+            setActiveVideo(initialVideo);
+            // ✅ بنجيب اللينك الآمن لأول فيديو
+            loadSecureVideo(initialVideo);
           }
         }
       } catch (err) {
@@ -69,8 +86,6 @@ export default function LearnPage() {
     setIsSubmitting(true);
     try {
       await api.post(`/courses/${id}/sections/${activeVideo._id}/complete`);
-
-      // بنحدث الـ State عشان العلامة تظهر فوراً
       setCompletedSections((prev) => [...prev, activeVideo._id]);
       toast.success("Marked as completed!");
     } catch (err: any) {
@@ -78,6 +93,12 @@ export default function LearnPage() {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  // ✅ دالة اختيار فيديو جديد
+  const handleVideoSelect = (section: any) => {
+    setActiveVideo(section);
+    loadSecureVideo(section);
   };
 
   if (isLoading) {
@@ -120,16 +141,15 @@ export default function LearnPage() {
                   Section {index + 1}: {section.title}
                 </h3>
                 <div className="space-y-1 mt-1">
-                  {section.videoUrl ? (
+                  {section.videoId ? (
                     <button
-                      onClick={() => setActiveVideo(section)}
+                      onClick={() => handleVideoSelect(section)}
                       className={`w-full text-left px-3 py-2.5 rounded-lg text-sm flex items-center justify-between gap-3 transition-colors cursor-pointer ${activeVideo?._id === section._id
                           ? 'bg-copper/10 text-copper border-l-2 border-copper'
                           : 'text-bone hover:bg-graphite border-l-2 border-transparent'
                         }`}
                     >
                       <div className="flex items-center gap-3">
-                        {/* ✅ لو الفيديو مكتمل، بتظهر علامة صح، لو لأ بيظهر أيقونة تشغيل */}
                         {isCompleted ? (
                           <CheckCircle2 size={16} className="text-green-500" />
                         ) : (
@@ -154,14 +174,24 @@ export default function LearnPage() {
       <div className="flex-1 flex flex-col h-full order-1 md:order-2 overflow-y-auto bg-obsidian">
         {activeVideo ? (
           <div className="w-full aspect-video bg-black flex items-center justify-center border-b border-graphite relative">
-            {/* ✅ مشغل Bunny Stream */}
-            <iframe
-              src={activeVideo.videoUrl}
-              loading="lazy"
-              className="absolute top-0 left-0 w-full h-full"
-              allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
-              allowFullScreen
-            ></iframe>
+            
+            {/* ✅ مشغل Bunny Stream الآمن */}
+            {isVideoLoading ? (
+              <div className="flex flex-col items-center gap-3 text-fog">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-copper"></div>
+                <p className="text-sm">Securing video stream...</p>
+              </div>
+            ) : signedVideoUrl ? (
+              <iframe
+                src={signedVideoUrl}
+                loading="lazy"
+                className="absolute top-0 left-0 w-full h-full"
+                allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
+                allowFullScreen
+              ></iframe>
+            ) : (
+              <p className="text-red-400">Failed to load video. Please try again later.</p>
+            )}
           </div>
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center text-steel bg-obsidian border-b border-graphite">
@@ -173,8 +203,6 @@ export default function LearnPage() {
         {/* تفاصيل الفيديو */}
         {activeVideo && (
           <div className="p-8 md:p-10 max-w-4xl">
-
-            {/* ✅ شريط العنوان وزرار الإكمال */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
               <h1 className="font-serif text-3xl md:text-4xl text-white">
                 {activeVideo.introVideoTitle || activeVideo.title}

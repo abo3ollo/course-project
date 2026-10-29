@@ -1,4 +1,4 @@
-بناءً على التحديث الأخير (إضافة الـ SEO & Metadata وصفحة الـ 404)، تم تحديث ملف `PROJECT_SUMMARY.md` بالكامل ليكون النسخة النهائية الجاهزة للتسليم.
+بناءً على التحديث الأخير الخاص بـ **حماية الفيديوهات (Signed URLs) و Hotlink Protection**، تم تحديث ملف `PROJECT_SUMMARY.md` ليكون النسخة النهائية الشاملة.
 
 انسخ الملف ده كامل واحفظه عندك:
 
@@ -18,6 +18,7 @@
 - **Frontend:** Next.js 15 (App Router) + TypeScript + Tailwind + shadcn/ui
 - **Auth:** JWT (Access & Refresh Tokens) في httpOnly cookies
 - **Storage:** Cloudinary (للصور والإيصالات) + Bunny Stream (للفيديوهات)
+- **Video Security:** Bunny Stream Signed URLs + Hotlink Protection
 - **Payments:** Manual Payment (رفع إيصال + موافقة الأدمن)
 - **SEO:** Dynamic Metadata + Sitemap + Robots.txt
 - **Deploy:** Vercel (Backend + Frontend)
@@ -40,19 +41,19 @@ Backend/
 ├── controllers/
 │   ├── auth.controllers.js       # register, login, refresh, logout, logoutAll, forgot, reset, verifyEmail, resendVerification
 │   ├── users.controllers.js      # getAllUsers, getMe, updateMe, changePassword, uploadAvatar, updateUserRole, deleteUser
-│   ├── courses.controllers.js    # getAllCourse, getSingleCourse, CreateCourse, updateCourse, deleteCourse, enrollCourse, getMyCourses, getDashboardStats, addSection (Bunny), updateSection (Bunny), deleteSection, completeSection, getInstructorStats, getAdminStats, getPendingEnrollments, updateEnrollmentStatus, getInstructorRevenue, getAllInstructorsFinancials, getBunnyUploadSignature
+│   ├── courses.controllers.js    # getAllCourse, getSingleCourse, CreateCourse, updateCourse, deleteCourse, enrollCourse, getMyCourses, getDashboardStats, addSection (Bunny), updateSection (Bunny), deleteSection, completeSection, getInstructorStats, getAdminStats, getPendingEnrollments, updateEnrollmentStatus, getInstructorRevenue, getAllInstructorsFinancials, getBunnyUploadSignature, getSignedBunnyUrl
 │   ├── reviews.controllers.js    # createReview, getCourseReviews
 │   └── notifications.controllers.js # getMyNotifications, markAsRead, markAllAsRead
 ├── models/
 │   ├── user.models.js            # User schema (with refreshToken field)
-│   ├── courses.models.js         # Course schema (sections & ratings)
+│   ├── courses.models.js         # Course schema (sections & ratings & videoId)
 │   ├── enrollment.models.js      # Enrollment schema (with paymentStatus, receipt, completedSections)
 │   ├── review.models.js          # Review schema (with auto-calc avg rating)
 │   └── notification.models.js    # Notification schema
 ├── routes/
 │   ├── auth.routes.js            # /api/auth/*
 │   ├── user.routes.js            # /api/users/*
-│   ├── courses.routes.js         # /api/courses/* (includes dashboard, admin, instructor stats, bunny signature)
+│   ├── courses.routes.js         # /api/courses/* (includes dashboard, admin, instructor stats, bunny signature, signed video)
 │   ├── reviews.routes.js         # /api/courses/:courseId/reviews/*
 │   └── notifications.routes.js   # /api/notifications/*
 ├── middlewares/
@@ -102,7 +103,7 @@ course-project-full/
 │   │   │       │   ├── page.tsx          # Server Component (SEO)
 │   │   │       │   ├── CourseDetailsClient.tsx # Client Component (UI)
 │   │   │       │   ├── checkout/page.tsx # Payment Page
-│   │   │       │   └── learn/page.tsx    # Learning Page (Bunny Stream)
+│   │   │       │   └── learn/page.tsx    # Learning Page (Bunny Stream + Signed URLs)
 │   │   │       ├── create/
 │   │   │       │   ├── page.tsx          # Create Course
 │   │   │       │   └── [courseId]/sections/new/page.tsx # Add Section (Bunny Upload)
@@ -181,6 +182,7 @@ course-project-full/
 | GET | `/api/courses/my-courses` | ✅ | any | كورسات الطالب (مع نسبة التقدم وحالة الدفع) |
 | GET | `/api/courses/dashboard-stats` | ✅ | any | إحصائيات لوحة تحكم الطالب |
 | POST | `/api/courses/bunny-upload-signature` | ✅ | Instructor/Admin | جلب تصريح الرفع من Bunny Stream |
+| GET | `/api/courses/signed-video/:videoId` | ✅ | any | جلب لينك فيديو موقع (صالح لمدة ساعة) |
 | POST | `/api/courses/:id/sections` | ✅ | Instructor/Admin | إضافة قسم (يستقبل videoId) |
 | PATCH | `/api/courses/:id/sections/:sectionId` | ✅ | Instructor/Admin | تعديل قسم (يستقبل videoId) |
 | DELETE | `/api/courses/:id/sections/:sectionId` | ✅ | Instructor/Admin | حذف قسم |
@@ -206,7 +208,7 @@ course-project-full/
 - ✅ Course Details (SEO Optimized: Split into Server + Client Components + Dynamic Metadata).
 - ✅ Course Management (Create, Edit, Manage Sections).
 - ✅ Add/Edit Section using **Bunny Stream** (Direct Client-Side Upload with Progress Bar).
-- ✅ Learning Page (`/courses/[id]/learn`): Bunny Stream Iframe Player + "Mark as Complete".
+- ✅ Learning Page (`/courses/[id]/learn`): Bunny Stream Iframe Player with **Signed URLs** + "Mark as Complete".
 - ✅ My Courses Page (Grid layout + Progress Bar + Payment Status Badges).
 - ✅ Home Page (Divided into 3 separate components: StudentDashboard, InstructorDashboard, AdminDashboard).
 - ✅ Admin Dashboard (`/admin`, `/admin/enrollments`, `/admin/financials`).
@@ -226,11 +228,12 @@ course-project-full/
 2. **Deploy:** Vercel للفرونت والباك إند (Next.js Rewrites proxy).
 3. **Media (Images):** Cloudinary (`multer-storage-cloudinary`).
 4. **Media (Videos):** Bunny Stream (Client-side upload using TUS, stored via `videoId`).
-5. **Manual Payments:** الطالب يرفع إيصال -> الأدمن يوافق -> يتم تفعيل الكورس.
-6. **Revenue Split:** 15% للمنصة، 85% للمدرس.
-7. **UI/UX:** تصميم Dark Theme (Slash).
-8. **Progress Tracking:** بيتم حفظ الأقسام المكتملة في الـ Enrollment Model.
-9. **SEO:** Server Components + `generateMetadata` + `sitemap.ts` + `robots.ts`.
+5. **Video Security:** Bunny Stream **Signed URLs** + **Allowed Referrers** (Hotlink Protection) لمنع مشاركة الفيديوهات.
+6. **Manual Payments:** الطالب يرفع إيصال -> الأدمن يوافق -> يتم تفعيل الكورس.
+7. **Revenue Split:** 15% للمنصة، 85% للمدرس.
+8. **UI/UX:** تصميم Dark Theme (Slash).
+9. **Progress Tracking:** بيتم حفظ الأقسام المكتملة في الـ Enrollment Model.
+10. **SEO:** Server Components + `generateMetadata` + `sitemap.ts` + `robots.ts`.
 
 ---
 
@@ -239,16 +242,15 @@ course-project-full/
 1. **نظام الدفع الإلكتروني (Stripe / Paymob)** (بديل للدفع اليدوي).
 2. **تهيئة الموقع للتسويق (Marketing/Demo)**.
 
-
 ---
 
 ## 🔑 معلومات مهمة للـ Chat الجديد
 
 **لما تفتح chat جديد، قول:**
 > "المشروع: Courses Platform (UI/UX: Slash Dark Theme).
-> Backend: Express + MongoDB + JWT (Access/Refresh) + Cloudinary (Images) + Bunny Stream (Videos) + Manual Payments (Vercel).
+> Backend: Express + MongoDB + JWT (Access/Refresh) + Cloudinary (Images) + Bunny Stream (Videos + Signed URLs) + Manual Payments (Vercel).
 > Frontend: Next.js 15 + TS + shadcn + SEO (Vercel).
-> Auth, Profile, Courses, Sections, Enrollment, Learning, Admin Dashboard, Reviews, Search/Filter, Progress Tracking, Notifications, Manual Payments, Instructor Revenue, Bunny Stream Integration, Refresh Tokens, 404 Page, SEO & Metadata خلصوا بالكامل.
+> Auth, Profile, Courses, Sections, Enrollment, Learning, Admin Dashboard, Reviews, Search/Filter, Progress Tracking, Notifications, Manual Payments, Instructor Revenue, Bunny Stream Integration, Refresh Tokens, 404 Page, SEO & Metadata, Video Security خلصوا بالكامل.
 > عايز نكمل في [Stripe / Marketing / Testing]."
 
 **وأرسل الملخص ده.**
