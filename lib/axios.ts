@@ -30,9 +30,23 @@ api.interceptors.response.use(
 
         return api(originalRequest);
       } catch (refreshError) {
-        // لو فشل التجديد، نطرده للـ Login
-        if (typeof window !== "undefined" && window.location.pathname !== "/login") {
-          window.location.href = "/login";
+        const protectedPaths = [
+          "/profile",
+          "/courses/create",
+          "/my-courses",
+          "/admin",
+          "/instructor",
+          "/courses/manage",
+        ];
+        if (typeof window !== "undefined") {
+          const pathname = window.location.pathname;
+          const isProtected = protectedPaths.some(
+            (path) => pathname === path || pathname.startsWith(`${path}/`)
+          );
+
+          if (isProtected) {
+            window.location.href = "/login";
+          }
         }
         return Promise.reject(refreshError);
       }
