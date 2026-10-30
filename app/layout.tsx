@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Playfair_Display } from "next/font/google"; // ✅ غيرنا الخطوط هنا
+import { Inter, Playfair_Display , Cairo } from "next/font/google"; // ✅ غيرنا الخطوط هنا
 import "./globals.css";
 import { Toaster } from "sonner";
 import { AuthProvider } from "@/src/context/AuthContext";
@@ -18,6 +18,8 @@ const playfair = Playfair_Display({
   subsets: ["latin"],
 });
 
+const cairo = Cairo({ subsets: ["arabic" , "latin"], variable: "--font-cairo" });
+
 export const metadata: Metadata = {
   title: {
     default: "EBDA3 | Master Your Craft",
@@ -29,7 +31,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "EBDA3",
     description: "Learn from industry experts and elevate your skills.",
-    url: "https://course-project-full.vercel.app",
+    url: "https://ebda3-chi.vercel.app",
     siteName: "EBDA3",
     images: [
       {
@@ -58,7 +60,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${playfair.variable} h-full antialiased`}
+      className={`${inter.variable} ${playfair.variable} ${cairo.variable} h-full antialiased`}
     >
       {/* ✅ ضفنا bg-[#08080a] و text-[#e2e3e9] كخلفية أساسية للموقع */}
       <body className="min-h-full flex flex-col bg-obsidian text-bone font-sans">

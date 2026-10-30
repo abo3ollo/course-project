@@ -7,7 +7,8 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
+  --font-sans: var(--font-inter), var(--font-cairo), sans-serif;
+  --font-serif: var(--font-ivy-presto), var(--font-cairo), serif;
   --font-mono: var(--font-geist-mono);
   --font-heading: var(--font-sans);
   --color-sidebar-ring: var(--sidebar-ring);
@@ -140,7 +141,12 @@
 }
 
 html[dir="rtl"] body {
-  font-family: Tahoma, Arial, sans-serif;
+  font-family: var(--font-cairo), sans-serif;
+  letter-spacing: 0; /* الخطوط العربية مش بتحتاج letter-spacing سالب */
+}
+
+html[dir="rtl"] .font-serif {
+  font-family: var(--font-cairo), serif; /* عشان العناوين الكبيرة تبقى عربي */
 }
 
 html[dir="rtl"] .text-left {

@@ -1,4 +1,4 @@
-بناءً على التحديث الأخير الخاص بـ **حماية الفيديوهات (Signed URLs) و Hotlink Protection**، تم تحديث ملف `PROJECT_SUMMARY.md` ليكون النسخة النهائية الشاملة.
+بناءً على إضافة **نظام اللغة (Language Context) ودعم اللغة العربية (RTL)**، تم تحديث ملف `PROJECT_SUMMARY.md` ليكون النسخة النهائية الشاملة.
 
 انسخ الملف ده كامل واحفظه عندك:
 
@@ -21,6 +21,7 @@
 - **Video Security:** Bunny Stream Signed URLs + Hotlink Protection
 - **Payments:** Manual Payment (رفع إيصال + موافقة الأدمن)
 - **SEO:** Dynamic Metadata + Sitemap + Robots.txt
+- **Localization:** Arabic & English (RTL/LTR Support via LanguageContext)
 - **Deploy:** Vercel (Backend + Frontend)
 
 **الروابط:**
@@ -118,7 +119,7 @@ course-project-full/
 │   │   ├── not-found.tsx                 # ✅ صفحة 404 مخصصة
 │   │   ├── sitemap.ts                    # ✅ Sitemap.xml ديناميكي
 │   │   ├── robots.ts                     # ✅ Robots.txt
-│   │   ├── layout.tsx                    # AuthProvider + Navbar + Toaster + SEO Metadata
+│   │   ├── layout.tsx                    # AuthProvider + LanguageProvider + Navbar + Toaster + SEO Metadata
 │   │   └── globals.css
 │   ├── components/
 │   │   ├── ui/                           # shadcn
@@ -129,7 +130,8 @@ course-project-full/
 │   │       ├── InstructorDashboard.tsx
 │   │       └── AdminDashboard.tsx
 │   ├── context/
-│   │   └── AuthContext.tsx               # user, refresh, logout
+│   │   ├── AuthContext.tsx               # user, refresh, logout
+│   │   └── LanguageContext.tsx           # ✅ Arabic & English (RTL/LTR)
 │   ├── lib/
 │   │   ├── axios.ts                      # withCredentials + Interceptor for Refresh
 │   │   └── utils.ts
@@ -200,24 +202,25 @@ course-project-full/
 | PATCH | `/api/notifications/read-all` | ✅ | any | تعليم كل الإشعارات كمقروءة |
 
 ### Frontend (كامل) ✅
-- ✅ Auth Pages (Register, Login, Verify Email, Forgot/Reset Password).
+- ✅ Auth Pages (Register, Login, Verify Email, Forgot/Reset Password) - Fully Translated.
 - ✅ AuthContext + Navbar (Dynamic links based on role: Student, Instructor, Admin).
 - ✅ Axios Interceptor (Auto-refresh tokens on 401 without infinite loops).
-- ✅ Profile Page (Dark Theme).
-- ✅ Courses Catalog (Grid view + Ratings Stars + Search & Filtering).
-- ✅ Course Details (SEO Optimized: Split into Server + Client Components + Dynamic Metadata).
-- ✅ Course Management (Create, Edit, Manage Sections).
-- ✅ Add/Edit Section using **Bunny Stream** (Direct Client-Side Upload with Progress Bar).
-- ✅ Learning Page (`/courses/[id]/learn`): Bunny Stream Iframe Player with **Signed URLs** + "Mark as Complete".
-- ✅ My Courses Page (Grid layout + Progress Bar + Payment Status Badges).
-- ✅ Home Page (Divided into 3 separate components: StudentDashboard, InstructorDashboard, AdminDashboard).
-- ✅ Admin Dashboard (`/admin`, `/admin/enrollments`, `/admin/financials`).
-- ✅ Instructor Revenue Page (`/instructor/revenue`).
-- ✅ Payment Checkout Page (`/courses/[id]/checkout`).
-- ✅ NotificationBell Component.
+- ✅ Profile Page (Dark Theme) - Fully Translated.
+- ✅ Courses Catalog (Grid view + Ratings Stars + Search & Filtering) - Fully Translated.
+- ✅ Course Details (SEO Optimized: Split into Server + Client Components + Dynamic Metadata) - Fully Translated.
+- ✅ Course Management (Create, Edit, Manage Sections) - Fully Translated.
+- ✅ Add/Edit Section using **Bunny Stream** (Direct Client-Side Upload with Progress Bar) - Fully Translated.
+- ✅ Learning Page (`/courses/[id]/learn`): Bunny Stream Iframe Player with **Signed URLs** + "Mark as Complete" - Fully Translated.
+- ✅ My Courses Page (Grid layout + Progress Bar + Payment Status Badges) - Fully Translated.
+- ✅ Home Page (Divided into 3 separate components: StudentDashboard, InstructorDashboard, AdminDashboard) - Fully Translated.
+- ✅ Admin Dashboard (`/admin`, `/admin/enrollments`, `/admin/financials`) - Fully Translated.
+- ✅ Instructor Revenue Page (`/instructor/revenue`) - Fully Translated.
+- ✅ Payment Checkout Page (`/courses/[id]/checkout`) - Fully Translated.
+- ✅ NotificationBell Component - Fully Translated.
 - ✅ Middleware Protection (with refreshToken validation).
-- ✅ Custom 404 Not Found Page.
+- ✅ Custom 404 Not Found Page - Fully Translated.
 - ✅ SEO Optimization (Root Metadata + Dynamic Metadata + Sitemap + Robots.txt).
+- ✅ **LanguageContext (English & Arabic) with RTL support and localStorage persistence.**
 - ✅ Next.js Rewrites.
 
 ---
@@ -231,9 +234,10 @@ course-project-full/
 5. **Video Security:** Bunny Stream **Signed URLs** + **Allowed Referrers** (Hotlink Protection) لمنع مشاركة الفيديوهات.
 6. **Manual Payments:** الطالب يرفع إيصال -> الأدمن يوافق -> يتم تفعيل الكورس.
 7. **Revenue Split:** 15% للمنصة، 85% للمدرس.
-8. **UI/UX:** تصميم Dark Theme (Slash).
+8. **UI/UX:** تصميم Dark Theme (Slash) + **دعم RTL** للغة العربية.
 9. **Progress Tracking:** بيتم حفظ الأقسام المكتملة في الـ Enrollment Model.
 10. **SEO:** Server Components + `generateMetadata` + `sitemap.ts` + `robots.ts`.
+11. **Localization:** `LanguageContext` مخصص مع `useSyncExternalStore` لتغيير اللغة (عربي/إنجليزي) وتغيير اتجاه الصفحة (RTL/LTR).
 
 ---
 
@@ -247,10 +251,10 @@ course-project-full/
 ## 🔑 معلومات مهمة للـ Chat الجديد
 
 **لما تفتح chat جديد، قول:**
-> "المشروع: Courses Platform (UI/UX: Slash Dark Theme).
+> "المشروع: Courses Platform (UI/UX: Slash Dark Theme + Arabic/English Support).
 > Backend: Express + MongoDB + JWT (Access/Refresh) + Cloudinary (Images) + Bunny Stream (Videos + Signed URLs) + Manual Payments (Vercel).
-> Frontend: Next.js 15 + TS + shadcn + SEO (Vercel).
-> Auth, Profile, Courses, Sections, Enrollment, Learning, Admin Dashboard, Reviews, Search/Filter, Progress Tracking, Notifications, Manual Payments, Instructor Revenue, Bunny Stream Integration, Refresh Tokens, 404 Page, SEO & Metadata, Video Security خلصوا بالكامل.
+> Frontend: Next.js 15 + TS + shadcn + SEO + LanguageContext (Vercel).
+> Auth, Profile, Courses, Sections, Enrollment, Learning, Admin Dashboard, Reviews, Search/Filter, Progress Tracking, Notifications, Manual Payments, Instructor Revenue, Bunny Stream Integration, Refresh Tokens, 404 Page, SEO & Metadata, Video Security, Multi-language (RTL) خلصوا بالكامل.
 > عايز نكمل في [Stripe / Marketing / Testing]."
 
 **وأرسل الملخص ده.**
