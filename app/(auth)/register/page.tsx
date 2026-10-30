@@ -12,8 +12,10 @@ import Link from "next/link";
 import { useState } from "react";
 import api from "@/lib/axios";
 import { registerSchema, RegisterSchemaType } from "@/src/schema/register.schema";
+import { useLanguage } from "@/src/context/LanguageContext";
 
 export default function RegisterPage() {
+  const { t } = useLanguage();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -26,10 +28,10 @@ export default function RegisterPage() {
     setIsLoading(true);
     try {
       await api.post("/auth/register", values);
-      toast.success("Account created! Check your email to verify.", { position: "top-center" });
+      toast.success(t("Account created! Check your email to verify."), { position: "top-center" });
       router.push(`/verify-email/pending?email=${encodeURIComponent(values.email)}`);
     } catch (err: any) {
-      const message = err?.response?.data?.message || "Something went wrong. Try again.";
+      const message = err?.response?.data?.message || t("Something went wrong. Try again.");
       const displayMessage = Array.isArray(message) ? message[0]?.msg : message;
       toast.error(displayMessage, { position: "top-center" });
     } finally {
@@ -44,8 +46,8 @@ export default function RegisterPage() {
         <div className="absolute top-0 right-0 w-32 h-32 bg-copper/5 rounded-bl-full pointer-events-none"></div>
 
         <div className="text-center mb-8">
-          <h2 className="font-serif text-3xl text-white mb-2">Create Account</h2>
-          <p className="text-sm text-fog">Join the platform to start learning.</p>
+          <h2 className="font-serif text-3xl text-white mb-2">{t("Create Account")}</h2>
+          <p className="text-sm text-fog">{t("Join the platform to start learning.")}</p>
         </div>
 
         <form className="space-y-5" onSubmit={form.handleSubmit(handleRegister)}>
@@ -56,7 +58,7 @@ export default function RegisterPage() {
                 control={form.control}
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel className="text-bone">First Name</FieldLabel>
+                    <FieldLabel className="text-bone">{t("First Name")}</FieldLabel>
                     <Input {...field} placeholder="Ahmed" className="bg-carbon border-graphite text-white placeholder:text-steel focus-visible:ring-copper" />
                     {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                   </Field>
@@ -69,7 +71,7 @@ export default function RegisterPage() {
                 control={form.control}
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel className="text-bone">Last Name</FieldLabel>
+                    <FieldLabel className="text-bone">{t("Last Name")}</FieldLabel>
                     <Input {...field} placeholder="Ali" className="bg-carbon border-graphite text-white placeholder:text-steel focus-visible:ring-copper" />
                     {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                   </Field>
@@ -84,7 +86,7 @@ export default function RegisterPage() {
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel className="text-bone">Email</FieldLabel>
+                  <FieldLabel className="text-bone">{t("Email")}</FieldLabel>
                   <Input {...field} type="email" placeholder="m@example.com" className="bg-carbon border-graphite text-white placeholder:text-steel focus-visible:ring-copper" />
                   {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                 </Field>
@@ -98,9 +100,9 @@ export default function RegisterPage() {
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel className="text-bone">Password</FieldLabel>
+                  <FieldLabel className="text-bone">{t("Password")}</FieldLabel>
                   <Input {...field} type="password" placeholder="********" className="bg-carbon border-graphite text-white placeholder:text-steel focus-visible:ring-copper" />
-                  <p className="text-xs text-fog mt-1">Must be at least 8 characters and contain a number.</p>
+                  <p className="text-xs text-fog mt-1">{t("Must be at least 8 characters and contain a number.")}</p>
                   {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                 </Field>
               )}
@@ -113,10 +115,10 @@ export default function RegisterPage() {
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel className="text-bone">I am a</FieldLabel>
+                  <FieldLabel className="text-bone">{t("I am a")}</FieldLabel>
                   <select {...field} className="w-full h-10 rounded-md border border-graphite bg-carbon px-3 py-2 text-sm text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-copper">
-                    <option value="USER">Student</option>
-                    <option value="INSTRUCTOR">Instructor</option>
+                    <option value="USER">{t("Student")}</option>
+                    <option value="INSTRUCTOR">{t("Instructor")}</option>
                   </select>
                   {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                 </Field>
@@ -125,13 +127,13 @@ export default function RegisterPage() {
           </FieldGroup>
 
           <Button type="submit" disabled={isLoading} className="w-full bg-white text-black hover:bg-gray-200 rounded-full font-medium h-11 mt-4">
-            {isLoading ? "Creating account..." : "Create Account"}
+            {isLoading ? t("Creating account...") : t("Create Account")}
           </Button>
 
           <p className="text-center text-sm text-fog mt-4">
-            Already have an account?{" "}
+            {t("Already have an account?")}{" "}
             <Link href="/login" className="text-copper hover:underline">
-              Sign in
+              {t("Sign in")}
             </Link>
           </p>
         </form>

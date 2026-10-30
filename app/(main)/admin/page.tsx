@@ -8,8 +8,10 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Users, BookOpen, Trash2, ShieldAlert } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useLanguage } from "@/src/context/LanguageContext";
 
 export default function AdminDashboard() {
+  const { t } = useLanguage();
   const { user, isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
 
@@ -36,7 +38,7 @@ export default function AdminDashboard() {
           setUsers(usersRes.data.data.users);
           setCourses(coursesRes.data.data.courses);
         } catch (err) {
-          toast.error("Failed to load dashboard data");
+          toast.error(t("Failed to load dashboard data"));
         } finally {
           setIsDataLoading(false);
         }
@@ -46,24 +48,24 @@ export default function AdminDashboard() {
   }, [user]);
 
   const handleDeleteUser = async (userId: string) => {
-    if (!confirm("Are you sure you want to delete this user?")) return;
+    if (!confirm(t("Are you sure you want to delete this user?"))) return;
     try {
       await api.delete(`/users/${userId}`);
       setUsers(users.filter((u) => u._id !== userId));
-      toast.success("User deleted");
+      toast.success(t("User deleted"));
     } catch (err) {
-      toast.error("Failed to delete user");
+      toast.error(t("Failed to delete user"));
     }
   };
 
   const handleDeleteCourse = async (courseId: string) => {
-    if (!confirm("Are you sure you want to delete this course?")) return;
+    if (!confirm(t("Are you sure you want to delete this course?"))) return;
     try {
       await api.delete(`/courses/${courseId}`);
       setCourses(courses.filter((c) => c._id !== courseId));
-      toast.success("Course deleted");
+      toast.success(t("Course deleted"));
     } catch (err) {
-      toast.error("Failed to delete course");
+      toast.error(t("Failed to delete course"));
     }
   };
 
@@ -135,8 +137,8 @@ export default function AdminDashboard() {
             <ShieldAlert className="text-copper w-8 h-8" />
           </div>
           <div>
-            <h1 className="font-serif text-4xl text-white">Admin Dashboard</h1>
-            <p className="text-fog mt-1">Manage platform users and courses.</p>
+            <h1 className="font-serif text-4xl text-white">{t("Admin Dashboard")}</h1>
+            <p className="text-fog mt-1">{t("Manage platform users and courses.")}</p>
           </div>
         </div>
 
@@ -154,7 +156,7 @@ export default function AdminDashboard() {
               size={16}
               className={activeTab === "users" ? "text-copper" : ""}
             />
-            Users
+            {t("Users")}
           </button>
 
           <button
@@ -169,7 +171,7 @@ export default function AdminDashboard() {
               size={16}
               className={activeTab === "courses" ? "text-copper" : ""}
             />
-            Courses
+            {t("Courses")}
           </button>
         </div>
 
@@ -217,10 +219,10 @@ export default function AdminDashboard() {
             <table className="w-full text-left text-sm">
               <thead className="bg-carbon border-b border-graphite text-fog">
                 <tr>
-                  <th className="px-6 py-4 font-medium">Name</th>
-                  <th className="px-6 py-4 font-medium">Email</th>
-                  <th className="px-6 py-4 font-medium">Role</th>
-                  <th className="px-6 py-4 font-medium text-right">Actions</th>
+                  <th className="px-6 py-4 font-medium">{t("Name")}</th>
+                  <th className="px-6 py-4 font-medium">{t("Email")}</th>
+                  <th className="px-6 py-4 font-medium">{t("Role")}</th>
+                  <th className="px-6 py-4 font-medium text-right">{t("Actions")}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-graphite">
@@ -233,7 +235,7 @@ export default function AdminDashboard() {
                       {u.avatar ? (
                         <img
                           src={u.avatar}
-                          alt="avatar"
+                          alt={t("Avatar")}
                           className="w-8 h-8 rounded-full object-cover"
                         />
                       ) : (
@@ -256,7 +258,7 @@ export default function AdminDashboard() {
                               : "bg-green-400/10 text-green-400 border border-green-400/20"
                         }`}
                       >
-                        {u.role}
+                        {t(u.role)}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-right">
@@ -278,11 +280,11 @@ export default function AdminDashboard() {
             <table className="w-full text-left text-sm">
               <thead className="bg-carbon border-b border-graphite text-fog">
                 <tr>
-                  <th className="px-6 py-4 font-medium">Course Title</th>
-                  <th className="px-6 py-4 font-medium">Instructor</th>
-                  <th className="px-6 py-4 font-medium">Price</th>
-                  <th className="px-6 py-4 font-medium">Status</th>
-                  <th className="px-6 py-4 font-medium text-right">Actions</th>
+                  <th className="px-6 py-4 font-medium">{t("Course Title")}</th>
+                  <th className="px-6 py-4 font-medium">{t("Instructor")}</th>
+                  <th className="px-6 py-4 font-medium">{t("Price")}</th>
+                  <th className="px-6 py-4 font-medium">{t("Status")}</th>
+                  <th className="px-6 py-4 font-medium text-right">{t("Actions")}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-graphite">
@@ -302,7 +304,7 @@ export default function AdminDashboard() {
                       <span
                         className={`px-2 py-1 rounded-full text-xs font-medium ${c.isPublished ? "bg-green-400/10 text-green-400" : "bg-gray-500/10 text-gray-400"}`}
                       >
-                        {c.isPublished ? "Published" : "Draft"}
+                        {c.isPublished ? t("Published") : t("Draft")}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-right">

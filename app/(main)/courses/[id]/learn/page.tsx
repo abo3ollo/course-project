@@ -8,8 +8,10 @@ import { PlayCircle, ArrowRight, Lock, BookOpen, CheckCircle2 } from "lucide-rea
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { useLanguage } from "@/src/context/LanguageContext";
 
 export default function LearnPage() {
+  const { t } = useLanguage();
   const params = useParams();
   const id = params.id as string;
   const router = useRouter();
@@ -37,7 +39,7 @@ export default function LearnPage() {
       const res = await api.get(`/courses/signed-video/${section.videoId}`);
       setSignedVideoUrl(res.data.data.signedUrl);
     } catch (err: any) {
-      toast.error("Failed to load secure video");
+      toast.error(t("Failed to load secure video"));
     } finally {
       setIsVideoLoading(false);
     }
@@ -87,9 +89,9 @@ export default function LearnPage() {
     try {
       await api.post(`/courses/${id}/sections/${activeVideo._id}/complete`);
       setCompletedSections((prev) => [...prev, activeVideo._id]);
-      toast.success("Marked as completed!");
+      toast.success(t("Marked as completed!"));
     } catch (err: any) {
-      toast.error(err?.response?.data?.message || "Failed to mark as completed");
+      toast.error(err?.response?.data?.message || t("Failed to mark as completed"));
     } finally {
       setIsSubmitting(false);
     }
@@ -109,7 +111,7 @@ export default function LearnPage() {
     );
   }
 
-  if (!course) return <div className="h-screen bg-obsidian text-white flex items-center justify-center">Course not found or Unauthorized.</div>;
+  if (!course) return <div className="h-screen bg-obsidian text-white flex items-center justify-center">{t("Course not found or Unauthorized.")}</div>;
 
   return (
     <div className="h-screen bg-obsidian text-bone font-sans flex flex-col md:flex-row overflow-hidden selection:bg-copper selection:text-white">
@@ -120,7 +122,7 @@ export default function LearnPage() {
         {/* Sidebar Header */}
         <div className="p-5 border-b border-graphite flex items-start justify-between bg-carbon">
           <div>
-            <h2 className="font-serif text-xl text-white">Course Content</h2>
+            <h2 className="font-serif text-xl text-white">{t("Course Content")}</h2>
             <p className="text-xs text-fog mt-2 line-clamp-2 leading-relaxed">{course.title}</p>
           </div>
           <Link href={`/courses/${id}`}>
@@ -160,7 +162,7 @@ export default function LearnPage() {
                     </button>
                   ) : (
                     <div className="px-3 py-2 text-sm text-steel italic flex items-center gap-2">
-                      <Lock size={14} /> No video available.
+                      <Lock size={14} /> {t("No video available.")}
                     </div>
                   )}
                 </div>
@@ -179,7 +181,7 @@ export default function LearnPage() {
             {isVideoLoading ? (
               <div className="flex flex-col items-center gap-3 text-fog">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-copper"></div>
-                <p className="text-sm">Securing video stream...</p>
+                <p className="text-sm">{t("Securing video stream...")}</p>
               </div>
             ) : signedVideoUrl ? (
               <iframe
@@ -190,13 +192,13 @@ export default function LearnPage() {
                 allowFullScreen
               ></iframe>
             ) : (
-              <p className="text-red-400">Failed to load video. Please try again later.</p>
+              <p className="text-red-400">{t("Failed to load video. Please try again later.")}</p>
             )}
           </div>
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center text-steel bg-obsidian border-b border-graphite">
             <BookOpen size={64} className="mb-4 opacity-30" />
-            <p className="font-serif text-xl text-fog">Select a video to start learning.</p>
+            <p className="font-serif text-xl text-fog">{t("Select a video to start learning.")}</p>
           </div>
         )}
 
@@ -217,9 +219,9 @@ export default function LearnPage() {
                   }`}
               >
                 {completedSections.includes(activeVideo._id) ? (
-                  <><CheckCircle2 className="w-4 h-4 mr-2" /> Completed</>
+                  <><CheckCircle2 className="w-4 h-4 mr-2" /> {t("Completed")}</>
                 ) : (
-                  "Mark as Complete"
+                  t("Mark as Complete")
                 )}
               </Button>
             </div>
@@ -229,7 +231,7 @@ export default function LearnPage() {
             </p>
 
             <div className="inline-flex items-center gap-2 text-sm text-copper bg-copper/10 px-4 py-2 rounded-full border border-copper/20">
-              <span className="font-semibold tracking-wider uppercase text-xs">Duration</span>
+              <span className="font-semibold tracking-wider uppercase text-xs">{t("Duration")}</span>
               <span className="w-1 h-1 rounded-full bg-copper/50"></span>
               <span>{activeVideo.duration || "N/A"}</span>
             </div>

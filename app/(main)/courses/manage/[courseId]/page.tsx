@@ -8,8 +8,10 @@ import { Course } from "@/src/types";
 import { Button } from "@/components/ui/button";
 import { Plus, Trash2, ArrowLeft, CheckCircle, Edit, Video } from "lucide-react";
 import { toast } from "sonner";
+import { useLanguage } from "@/src/context/LanguageContext";
 
 export default function ManageCoursePage() {
+  const { t } = useLanguage();
   const params = useParams();
   const courseId = params.courseId as string;
   const router = useRouter();
@@ -33,14 +35,14 @@ export default function ManageCoursePage() {
   }, [courseId]);
 
   const handleDeleteSection = async (sectionId: string) => {
-    if (!confirm("Are you sure you want to delete this section?")) return;
+    if (!confirm(t("Are you sure you want to delete this section?"))) return;
 
     try {
       await api.delete(`/courses/${courseId}/sections/${sectionId}`);
-      toast.success("Section deleted successfully");
+      toast.success(t("Section deleted successfully"));
       fetchCourse();
     } catch (err: any) {
-      toast.error(err?.response?.data?.message || "Failed to delete section");
+      toast.error(err?.response?.data?.message || t("Failed to delete section"));
     }
   };
 
@@ -53,7 +55,7 @@ export default function ManageCoursePage() {
   }
   
   if (!course) {
-    return <div className="min-h-screen bg-obsidian text-white text-center py-20">Course not found.</div>;
+    return <div className="min-h-screen bg-obsidian text-white text-center py-20">{t("Course not found.")}</div>;
   }
 
   return (
@@ -64,16 +66,16 @@ export default function ManageCoursePage() {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-12 border-b border-graphite pb-8">
           <div>
             <Link href="/courses" className="text-sm text-fog hover:text-white flex items-center gap-1 mb-3 transition-colors">
-              <ArrowLeft size={14} /> Back to Catalog
+              <ArrowLeft size={14} /> {t("Back to Catalog")}
             </Link>
-            <h1 className="font-serif text-4xl text-white">Manage: {course.title}</h1>
-            <p className="text-fog mt-2">Build your curriculum by adding sections and lessons.</p>
+            <h1 className="font-serif text-4xl text-white">{t("Manage: {title}", { title: course.title })}</h1>
+            <p className="text-fog mt-2">{t("Build your curriculum by adding sections and lessons.")}</p>
           </div>
           <Button 
             onClick={() => router.push(`/courses/${courseId}`)} 
             className="bg-white text-black hover:bg-gray-200 rounded-full font-medium px-6 h-11"
           >
-            <CheckCircle size={18} className="mr-2" /> Finish & View Course
+            <CheckCircle size={18} className="mr-2" /> {t("Finish & View Course")}
           </Button>
         </div>
 
@@ -92,7 +94,7 @@ export default function ManageCoursePage() {
                       <div className="flex items-center gap-4 text-sm text-fog">
                         <span className="flex items-center gap-1">
                           <Video size={14} className={section.videoUrl ? "text-copper" : "text-steel"} />
-                          {section.videoUrl ? "Video attached" : "No video"}
+                          {section.videoUrl ? t("Video attached") : t("No video")}
                         </span>
                         <span>•</span>
                         <span>{section.duration || "0 min"}</span>
@@ -107,7 +109,7 @@ export default function ManageCoursePage() {
                       className="flex-1 md:flex-none border-graphite bg-carbon text-white hover:bg-graphite hover:border-slate rounded-full px-5"
                       onClick={() => router.push(`/courses/manage/${courseId}/sections/${section._id}/edit`)}
                     >
-                      <Edit size={14} className="mr-2" /> Edit
+                      <Edit size={14} className="mr-2" /> {t("Edit")}
                     </Button>
 
                     <Button 
@@ -124,7 +126,7 @@ export default function ManageCoursePage() {
             ))
           ) : (
             <div className="text-center py-16 bg-onyx rounded-[10px] border border-graphite border-dashed">
-              <p className="text-fog">No sections added yet. Start building your course!</p>
+              <p className="text-fog">{t("No sections added yet. Start building your course!")}</p>
             </div>
           )}
         </div>
@@ -135,7 +137,7 @@ export default function ManageCoursePage() {
           className="w-full py-8 border-2 border-dashed border-graphite bg-carbon/50 text-fog hover:bg-carbon hover:text-copper hover:border-copper/50 transition-all rounded-[10px]"
           variant="outline"
         >
-          <Plus size={20} className="mr-2" /> Add New Section
+          <Plus size={20} className="mr-2" /> {t("Add New Section")}
         </Button>
       </div>
     </div>

@@ -9,8 +9,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { UploadCloud, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import api from "@/lib/axios";
+import { useLanguage } from "@/src/context/LanguageContext";
 
 export default function EditSectionPage() {
+  const { t } = useLanguage();
   const router = useRouter();
   const params = useParams();
   const courseId = params.courseId as string;
@@ -43,7 +45,7 @@ export default function EditSectionPage() {
           setCurrentVideoUrl(section.videoUrl || "");
         }
       } catch (err) {
-        toast.error("Failed to load section");
+        toast.error(t("Failed to load section"));
       } finally {
         setIsLoading(false);
       }
@@ -69,10 +71,10 @@ export default function EditSectionPage() {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
-      toast.success("Section updated successfully!");
+      toast.success(t("Section updated successfully!"));
       router.push(`/courses/manage/${courseId}`);
     } catch (err: any) {
-      toast.error(err?.response?.data?.message || "Failed to update section");
+      toast.error(err?.response?.data?.message || t("Failed to update section"));
     } finally {
       setIsSaving(false);
     }
@@ -101,15 +103,15 @@ export default function EditSectionPage() {
             <ArrowLeft size={18} />
           </Button>
           <div>
-            <h1 className="font-serif text-3xl text-white">Edit Section</h1>
-            <p className="text-fog mt-1">Update the section details or upload a new video.</p>
+            <h1 className="font-serif text-3xl text-white">{t("Edit Section")}</h1>
+            <p className="text-fog mt-1">{t("Update the section details or upload a new video.")}</p>
           </div>
         </div>
 
         <form onSubmit={handleSubmit} className="bg-onyx border border-graphite rounded-[10px] p-8 space-y-8">
           
           <div className="space-y-2">
-            <Label className="text-bone text-base">Section Title <span className="text-copper">*</span></Label>
+            <Label className="text-bone text-base">{t("Section Title")} <span className="text-copper">*</span></Label>
             <Input 
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
@@ -118,7 +120,7 @@ export default function EditSectionPage() {
           </div>
 
           <div className="space-y-2">
-            <Label className="text-bone text-base">Learning Objective</Label>
+            <Label className="text-bone text-base">{t("Learning Objective")}</Label>
             <Textarea 
               value={formData.learningObjective}
               onChange={(e) => setFormData({ ...formData, learningObjective: e.target.value })}
@@ -127,7 +129,7 @@ export default function EditSectionPage() {
           </div>
 
           <div className="space-y-2">
-            <Label className="text-bone text-base">Duration</Label>
+            <Label className="text-bone text-base">{t("Duration")}</Label>
             <Input 
               value={formData.duration}
               onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
@@ -138,7 +140,7 @@ export default function EditSectionPage() {
           {/* Current Video */}
           {currentVideoUrl && (
             <div className="border border-graphite rounded-[10px] p-5 bg-carbon">
-              <Label className="mb-3 block text-sm font-semibold text-fog">Current Video</Label>
+              <Label className="mb-3 block text-sm font-semibold text-fog">{t("Current Video")}</Label>
               <video 
                 src={currentVideoUrl} 
                 controls 
@@ -149,13 +151,13 @@ export default function EditSectionPage() {
 
           {/* Upload New Video */}
           <div className="space-y-2">
-            <Label className="text-bone text-base">Update Video (Optional)</Label>
+            <Label className="text-bone text-base">{t("Update Video (Optional)")}</Label>
             <label className="border-2 border-dashed border-graphite rounded-[10px] p-10 flex flex-col items-center justify-center bg-onyx cursor-pointer hover:border-copper/50 transition">
               <div className="bg-carbon p-4 rounded-full mb-4 border border-graphite">
                 <UploadCloud size={32} className="text-copper" />
               </div>
               <span className="text-sm font-medium text-white">
-                {videoFile ? videoFile.name : "Click to upload new video (Max 100MB)"}
+                {videoFile ? videoFile.name : t("Click to upload new video (Max 100MB)")}
               </span>
               <input type="file" className="hidden" accept="video/*" onChange={(e) => setVideoFile(e.target.files?.[0] || null)} />
             </label>
@@ -164,10 +166,10 @@ export default function EditSectionPage() {
           {/* Buttons */}
           <div className="flex justify-end gap-4 pt-6 border-t border-graphite">
             <Button type="button" variant="outline" onClick={() => router.back()} className="border-graphite text-fog hover:text-white rounded-full px-6">
-              Cancel
+              {t("Cancel")}
             </Button>
             <Button type="submit" disabled={isSaving} className="bg-white text-black hover:bg-gray-200 rounded-full font-medium px-8">
-              {isSaving ? "Saving..." : "Save Changes"}
+              {isSaving ? t("Saving...") : t("Save Changes")}
             </Button>
           </div>
         </form>

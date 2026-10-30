@@ -8,9 +8,11 @@ import { Course } from "@/src/types";
 import { useAuth } from "@/src/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useLanguage } from "@/src/context/LanguageContext";
 
 export default function CoursesPage() {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const [courses, setCourses] = useState<Course[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -60,16 +62,16 @@ export default function CoursesPage() {
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-6 border-b border-graphite pb-8">
           <div className="text-center md:text-left">
-            <h1 className="font-serif text-4xl text-white">Browse Catalog</h1>
+            <h1 className="font-serif text-4xl text-white">{t("Browse Catalog")}</h1>
             <p className="text-fog mt-3 max-w-xl">
-              Discover new skills and expand your knowledge with our top-rated courses.
+              {t("Discover new skills and expand your knowledge with our top-rated courses.")}
             </p>
           </div>
 
           {(user?.role === "INSTRUCTOR" || user?.role === "ADMIN") && (
             <Link href="/courses/create">
               <Button className="bg-white text-black hover:bg-gray-200 rounded-full font-medium px-6 w-full md:w-auto">
-                + Create Course
+                {t("+ Create Course")}
               </Button>
             </Link>
           )}
@@ -79,13 +81,13 @@ export default function CoursesPage() {
         <div className="bg-onyx border border-graphite rounded-[10px] p-4 mb-8 flex flex-col md:flex-row gap-4 items-center">
           {/* Search Bar */}
           <div className="relative flex-1 w-full">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-fog" size={18} />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-fog rtl:left-auto rtl:right-3" size={18} />
             <Input
               type="text"
-              placeholder="Search for courses..."
+              placeholder={t("Search for courses...")}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 bg-carbon border-graphite text-white placeholder:text-fog focus-visible:ring-copper h-11"
+              className="pl-10 rtl:pl-3 rtl:pr-10 bg-carbon border-graphite text-white placeholder:text-fog focus-visible:ring-copper h-11"
             />
           </div>
 
@@ -95,10 +97,10 @@ export default function CoursesPage() {
             onChange={(e) => setCategory(e.target.value)}
             className="w-full md:w-auto h-11 rounded-md border border-graphite bg-carbon px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-copper"
           >
-            <option value="">All Categories</option>
-            <option value="Programming">Programming</option>
-            <option value="Design">Design</option>
-            <option value="Business">Business</option>
+            <option value="">{t("All Categories")}</option>
+            <option value="Programming">{t("Programming")}</option>
+            <option value="Design">{t("Design")}</option>
+            <option value="Business">{t("Business")}</option>
           </select>
 
           {/* Level Filter */}
@@ -107,10 +109,10 @@ export default function CoursesPage() {
             onChange={(e) => setLevel(e.target.value)}
             className="w-full md:w-auto h-11 rounded-md border border-graphite bg-carbon px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-copper"
           >
-            <option value="">All Levels</option>
-            <option value="Beginner">Beginner</option>
-            <option value="Intermediate">Intermediate</option>
-            <option value="Advanced">Advanced</option>
+            <option value="">{t("All Levels")}</option>
+            <option value="Beginner">{t("Beginner")}</option>
+            <option value="Intermediate">{t("Intermediate")}</option>
+            <option value="Advanced">{t("Advanced")}</option>
           </select>
 
           {/* Sort */}
@@ -119,10 +121,10 @@ export default function CoursesPage() {
             onChange={(e) => setSort(e.target.value)}
             className="w-full md:w-auto h-11 rounded-md border border-graphite bg-carbon px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-copper"
           >
-            <option value="-createdAt">Newest</option>
-            <option value="price">Price: Low to High</option>
-            <option value="-price">Price: High to Low</option>
-            <option value="-ratingsAverage">Highest Rated</option>
+            <option value="-createdAt">{t("Newest")}</option>
+            <option value="price">{t("Price: Low to High")}</option>
+            <option value="-price">{t("Price: High to Low")}</option>
+            <option value="-ratingsAverage">{t("Highest Rated")}</option>
           </select>
         </div>
 
@@ -134,8 +136,8 @@ export default function CoursesPage() {
         ) : courses.length === 0 ? (
           <div className="text-center py-24 bg-onyx rounded-[10px] border border-graphite">
             <Filter className="mx-auto h-12 w-12 text-[#2e3038] mb-4" />
-            <h3 className="text-lg font-medium text-white">No courses found</h3>
-            <p className="text-fog mt-1">Try adjusting your search or filters.</p>
+            <h3 className="text-lg font-medium text-white">{t("No courses found")}</h3>
+            <p className="text-fog mt-1">{t("Try adjusting your search or filters.")}</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -161,9 +163,9 @@ export default function CoursesPage() {
                 <div className="p-6 flex flex-col grow">
                   <div className="flex items-center gap-2 text-xs font-semibold text-copper mb-3 tracking-wider uppercase">
                     <Tag size={12} />
-                    <span>{course.category}</span>
+                    <span>{t(course.category)}</span>
                     <span className="text-[#464853]">•</span>
-                    <span>{course.level}</span>
+                    <span>{t(course.level)}</span>
                   </div>
 
                   <h2 className="font-serif text-xl text-white mb-2 line-clamp-2 leading-snug group-hover:text-copper transition-colors">
@@ -202,7 +204,7 @@ export default function CoursesPage() {
                     {course.instructor?.avatar ? (
                       <img
                         src={course.instructor.avatar}
-                        alt="Instructor"
+                        alt={t("Instructor")}
                         className="w-7 h-7 rounded-full object-cover border border-[#2e3038]"
                       />
                     ) : (

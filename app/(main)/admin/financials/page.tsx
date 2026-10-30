@@ -4,8 +4,10 @@ import { useEffect, useState } from "react";
 import api from "@/lib/axios";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Users, BookOpen, DollarSign, Wallet } from "lucide-react";
+import { useLanguage } from "@/src/context/LanguageContext";
 
 export default function AdminFinancialsPage() {
+  const { t } = useLanguage();
   const [financials, setFinancials] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -48,15 +50,15 @@ export default function AdminFinancialsPage() {
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-graphite pb-6">
           <div>
-            <h1 className="font-serif text-4xl text-white">Instructors Financials</h1>
-            <p className="text-fog mt-1">Overview of all instructors revenue and platform fees.</p>
+            <h1 className="font-serif text-4xl text-white">{t("Instructors Financials")}</h1>
+            <p className="text-fog mt-1">{t("Overview of all instructors revenue and platform fees.")}</p>
           </div>
           <div className="bg-copper/10 border border-copper/30 rounded-xl p-4 flex items-center gap-4">
             <div className="bg-copper/20 p-3 rounded-full">
               <DollarSign className="text-copper" size={24} />
             </div>
             <div>
-              <p className="text-sm text-copper font-medium">Total Platform Revenue</p>
+              <p className="text-sm text-copper font-medium">{t("Total Platform Revenue")}</p>
               <p className="text-2xl font-bold text-white">${totalPlatformRevenue.toFixed(2)}</p>
             </div>
           </div>
@@ -68,18 +70,18 @@ export default function AdminFinancialsPage() {
             <table className="w-full text-left text-sm whitespace-nowrap">
               <thead className="bg-carbon border-b border-graphite text-fog">
                 <tr>
-                  <th className="px-6 py-4 font-medium">Instructor</th>
-                  <th className="px-6 py-4 font-medium">Courses</th>
-                  <th className="px-6 py-4 font-medium">Students</th>
-                  <th className="px-6 py-4 font-medium">Total Sales</th>
-                  <th className="px-6 py-4 font-medium text-copper">Platform Cut (15%)</th>
-                  <th className="px-6 py-4 font-medium text-green-400">Instructor Cut (85%)</th>
+                  <th className="px-6 py-4 font-medium">{t("Instructor")}</th>
+                  <th className="px-6 py-4 font-medium">{t("Courses")}</th>
+                  <th className="px-6 py-4 font-medium">{t("Students")}</th>
+                  <th className="px-6 py-4 font-medium">{t("Total Sales")}</th>
+                  <th className="px-6 py-4 font-medium text-copper">{t("Platform Cut (15%)")}</th>
+                  <th className="px-6 py-4 font-medium text-green-400">{t("Instructor Cut (85%)")}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-graphite">
                 {financials.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="text-center py-10 text-fog">No instructors found.</td>
+                    <td colSpan={6} className="text-center py-10 text-fog">{t("No instructors found.")}</td>
                   </tr>
                 ) : (
                   financials.map((inst) => (
@@ -87,7 +89,7 @@ export default function AdminFinancialsPage() {
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
                           {inst.avatar ? (
-                            <img src={inst.avatar} alt="avatar" className="w-9 h-9 rounded-full object-cover border border-graphite" />
+                            <img src={inst.avatar} alt={t("Avatar")} className="w-9 h-9 rounded-full object-cover border border-graphite" />
                           ) : (
                             <div className="w-9 h-9 rounded-full bg-graphite text-copper flex items-center justify-center font-bold">
                               {inst.name.charAt(0)}

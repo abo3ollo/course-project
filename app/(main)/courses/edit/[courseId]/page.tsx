@@ -11,8 +11,10 @@ import { Input } from "@/components/ui/input";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { UploadCloud, ArrowLeft } from "lucide-react";
 import { createCourseSchema } from "@/src/schema/course.schema";
+import { useLanguage } from "@/src/context/LanguageContext";
 
 export default function EditCoursePage() {
+  const { t } = useLanguage();
   const router = useRouter();
   const params = useParams();
   const courseId = params.courseId as string;
@@ -45,7 +47,7 @@ export default function EditCoursePage() {
         });
         setCurrentThumbnailUrl(course.thumbnail);
       } catch (err) {
-        toast.error("Failed to load course");
+        toast.error(t("Failed to load course"));
         router.push("/courses");
       } finally {
         setIsLoading(false);
@@ -73,10 +75,10 @@ export default function EditCoursePage() {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
-      toast.success("Course updated successfully!");
+      toast.success(t("Course updated successfully!"));
       router.push(`/courses/manage/${courseId}`);
     } catch (err: any) {
-      toast.error(err?.response?.data?.message || "Failed to update course");
+      toast.error(err?.response?.data?.message || t("Failed to update course"));
     } finally {
       setIsSaving(false);
     }
@@ -105,8 +107,8 @@ export default function EditCoursePage() {
             <ArrowLeft size={18} />
           </Button>
           <div>
-            <h1 className="font-serif text-4xl text-white">Edit Course</h1>
-            <p className="text-fog mt-2">Update your course details and media.</p>
+            <h1 className="font-serif text-4xl text-white">{t("Edit Course")}</h1>
+            <p className="text-fog mt-2">{t("Update your course details and media.")}</p>
           </div>
         </div>
 
@@ -114,13 +116,13 @@ export default function EditCoursePage() {
           
           {/* Basic Info */}
           <div className="bg-onyx border border-graphite rounded-[10px] p-8">
-            <h2 className="font-serif text-2xl text-white mb-6 border-b border-graphite pb-4">Basic Information</h2>
+            <h2 className="font-serif text-2xl text-white mb-6 border-b border-graphite pb-4">{t("Basic Information")}</h2>
             <div className="space-y-6">
               
               <FieldGroup>
                 <Controller name="title" control={form.control} render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel className="text-bone">Course Title <span className="text-copper">*</span></FieldLabel>
+                    <FieldLabel className="text-bone">{t("Course Title")} <span className="text-copper">*</span></FieldLabel>
                     <Input {...field} className="bg-carbon border-graphite text-white placeholder:text-steel focus-visible:ring-copper" />
                     {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                   </Field>
@@ -130,7 +132,7 @@ export default function EditCoursePage() {
               <FieldGroup>
                 <Controller name="description" control={form.control} render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel className="text-bone">Course Description <span className="text-copper">*</span></FieldLabel>
+                    <FieldLabel className="text-bone">{t("Course Description")} <span className="text-copper">*</span></FieldLabel>
                     <textarea {...field} className="flex min-h-30 w-full rounded-md border border-graphite bg-carbon px-3 py-2 text-sm text-white placeholder:text-steel focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-copper" />
                     {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                   </Field>
@@ -141,10 +143,10 @@ export default function EditCoursePage() {
                 <FieldGroup>
                   <Controller name="category" control={form.control} render={({ field }) => (
                     <Field>
-                      <FieldLabel className="text-bone">Category</FieldLabel>
+                      <FieldLabel className="text-bone">{t("Category")}</FieldLabel>
                       <select {...field} className="flex h-10 w-full rounded-md border border-graphite bg-carbon px-3 py-2 text-sm text-white focus-visible:ring-1 focus-visible:ring-copper">
-                        <option value="Programming">Programming</option>
-                        <option value="Design">Design</option>
+                        <option value="Programming">{t("Programming")}</option>
+                        <option value="Design">{t("Design")}</option>
                       </select>
                     </Field>
                   )} />
@@ -152,7 +154,7 @@ export default function EditCoursePage() {
                 <FieldGroup>
                   <Controller name="price" control={form.control} render={({ field, fieldState }) => (
                     <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel className="text-bone">Price ($) <span className="text-copper">*</span></FieldLabel>
+                      <FieldLabel className="text-bone">{t("Price ($)")} <span className="text-copper">*</span></FieldLabel>
                       <Input type="number" {...field} value={field.value ?? ""} className="bg-carbon border-graphite text-white" />
                       {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                     </Field>
@@ -164,23 +166,23 @@ export default function EditCoursePage() {
 
           {/* Media Update */}
           <div className="bg-onyx border border-graphite rounded-[10px] p-8">
-            <h2 className="font-serif text-2xl text-white mb-6 border-b border-graphite pb-4">Course Thumbnail</h2>
+            <h2 className="font-serif text-2xl text-white mb-6 border-b border-graphite pb-4">{t("Course Thumbnail")}</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               
               <div>
-                <FieldLabel className="mb-3 text-fog">Current Thumbnail</FieldLabel>
+                <FieldLabel className="mb-3 text-fog">{t("Current Thumbnail")}</FieldLabel>
                 <img 
                   src={currentThumbnailUrl} 
-                  alt="Thumbnail" 
+                  alt={t("Thumbnail")}
                   className="w-full h-52 object-cover rounded-[10px] border border-graphite" 
                 />
               </div>
               
               <div>
-                <FieldLabel className="mb-3 text-bone">Upload New (Optional)</FieldLabel>
+                <FieldLabel className="mb-3 text-bone">{t("Upload New (Optional)")}</FieldLabel>
                 <label className="border-2 border-dashed border-graphite rounded-[10px] p-8 flex flex-col items-center justify-center cursor-pointer hover:border-copper/50 hover:bg-carbon transition h-52 bg-onyx">
                   <UploadCloud size={32} className="text-copper mb-3" />
-                  <span className="text-sm font-medium text-white">Click to change image</span>
+                  <span className="text-sm font-medium text-white">{t("Click to change image")}</span>
                   {thumbnail && <span className="text-xs text-copper mt-2 font-semibold">{thumbnail.name}</span>}
                   <input type="file" className="hidden" accept="image/*" onChange={(e) => setThumbnail(e.target.files?.[0] || null)} />
                 </label>
@@ -192,10 +194,10 @@ export default function EditCoursePage() {
           {/* Buttons */}
           <div className="flex justify-end gap-4 pt-4">
             <Button type="button" variant="outline" onClick={() => router.back()} className="border-graphite text-fog hover:text-white rounded-full px-6">
-              Cancel
+              {t("Cancel")}
             </Button>
             <Button type="submit" disabled={isSaving} className="bg-white text-black hover:bg-gray-200 rounded-full font-medium px-8">
-              {isSaving ? "Saving..." : "Save Changes"}
+              {isSaving ? t("Saving...") : t("Save Changes")}
             </Button>
           </div>
         </form>

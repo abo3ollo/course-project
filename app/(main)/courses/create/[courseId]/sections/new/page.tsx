@@ -10,8 +10,10 @@ import { ArrowLeft, UploadCloud, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import api from "@/lib/axios";
 import * as tus from "tus-js-client";
+import { useLanguage } from "@/src/context/LanguageContext";
 
 export default function AddSectionPage() {
+  const { t } = useLanguage();
   const router = useRouter();
   const params = useParams();
   const courseId = params.courseId as string;
@@ -60,7 +62,7 @@ export default function AddSectionPage() {
         },
         onError: (error) => {
           console.error("Upload failed:", error);
-          toast.error("Failed to upload video to Bunny");
+          toast.error(t("Failed to upload video to Bunny"));
           setIsUploading(false);
         },
         onProgress: (bytesUploaded, bytesTotal) => {
@@ -68,7 +70,7 @@ export default function AddSectionPage() {
           setUploadProgress(Number(percentage));
         },
         onSuccess: () => {
-          toast.success("Video uploaded successfully!");
+          toast.success(t("Video uploaded successfully!"));
           setBunnyVideoId(videoId);
           setIsUploading(false);
           setUploadProgress(100);
@@ -77,7 +79,7 @@ export default function AddSectionPage() {
 
       upload.start();
     } catch (err: any) {
-      toast.error("Failed to get upload signature");
+      toast.error(t("Failed to get upload signature"));
       setIsUploading(false);
     }
   };
@@ -93,11 +95,11 @@ export default function AddSectionPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.title.trim()) {
-      toast.error("Section title is required");
+      toast.error(t("Section title is required"));
       return;
     }
     if (!bunnyVideoId) {
-      toast.error("Please wait for the video to finish uploading");
+      toast.error(t("Please wait for the video to finish uploading"));
       return;
     }
 
@@ -116,10 +118,10 @@ export default function AddSectionPage() {
 
       await api.post(`/courses/${courseId}/sections`, payload);
 
-      toast.success("Section added successfully!");
+      toast.success(t("Section added successfully!"));
       router.push(`/courses/manage/${courseId}`);
     } catch (err: any) {
-      toast.error(err?.response?.data?.message || "Failed to add section");
+      toast.error(err?.response?.data?.message || t("Failed to add section"));
     } finally {
       setIsLoading(false);
     }
@@ -136,10 +138,10 @@ export default function AddSectionPage() {
           </Button>
           <div>
             <p className="text-xs font-semibold text-copper tracking-widest uppercase mb-1">
-              Curriculum Builder • Section
+              {t("Curriculum Builder • Section")}
             </p>
-            <h1 className="font-serif text-4xl text-white">Add New Section</h1>
-            <p className="text-fog mt-2">Create a curriculum chapter to organize lectures, videos, and quizzes.</p>
+            <h1 className="font-serif text-4xl text-white">{t("Add New Section")}</h1>
+            <p className="text-fog mt-2">{t("Create a curriculum chapter to organize lectures, videos, and quizzes.")}</p>
           </div>
         </div>
 
@@ -147,9 +149,9 @@ export default function AddSectionPage() {
           
           {/* Section Title */}
           <div className="space-y-2">
-            <Label className="text-bone text-base">Section Title <span className="text-copper">*</span></Label>
+            <Label className="text-bone text-base">{t("Section Title")} <span className="text-copper">*</span></Label>
             <Input 
-              placeholder="e.g., Advanced State Management with Redux Toolkit" 
+              placeholder={t("e.g., Advanced State Management with Redux Toolkit")}
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
               className="h-12 text-lg bg-carbon border-graphite text-white placeholder:text-steel focus-visible:ring-copper"
@@ -159,11 +161,11 @@ export default function AddSectionPage() {
           {/* Learning Objective */}
           <div className="space-y-2">
             <div className="flex justify-between">
-              <Label className="text-bone text-base">Learning Objective</Label>
-              <span className="text-xs text-fog">Optional</span>
+              <Label className="text-bone text-base">{t("Learning Objective")}</Label>
+              <span className="text-xs text-fog">{t("Optional")}</span>
             </div>
             <Textarea 
-              placeholder="What key outcomes or skills will students achieve in this section?"
+              placeholder={t("What key outcomes or skills will students achieve in this section?")}
               value={formData.learningObjective}
               onChange={(e) => setFormData({ ...formData, learningObjective: e.target.value })}
               className="min-h-25 bg-carbon border-graphite text-white placeholder:text-steel focus-visible:ring-copper"
@@ -173,24 +175,24 @@ export default function AddSectionPage() {
           {/* Video Section */}
           <div className="border border-graphite rounded-[10px] p-6 bg-carbon">
             <div className="mb-6">
-              <h4 className="font-serif text-xl text-white">Section Overview Video</h4>
-              <p className="text-sm text-fog mt-1">Attach an introductory clip or first lecture for this chapter.</p>
+              <h4 className="font-serif text-xl text-white">{t("Section Overview Video")}</h4>
+              <p className="text-sm text-fog mt-1">{t("Attach an introductory clip or first lecture for this chapter.")}</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
               <div className="space-y-2">
-                <Label className="text-sm text-bone">Lecture / Video Title</Label>
+                <Label className="text-sm text-bone">{t("Lecture / Video Title")}</Label>
                 <Input 
-                  placeholder="e.g., Section 2 Intro & Overview"
+                  placeholder={t("e.g., Section 2 Intro & Overview")}
                   value={formData.introVideoTitle}
                   onChange={(e) => setFormData({ ...formData, introVideoTitle: e.target.value })}
                   className="bg-onyx border-graphite text-white placeholder:text-steel"
                 />
               </div>
               <div className="space-y-2">
-                <Label className="text-sm text-bone">Estimated Duration</Label>
+                <Label className="text-sm text-bone">{t("Estimated Duration")}</Label>
                 <Input 
-                  placeholder="e.g., 12:45 min"
+                  placeholder={t("e.g., 12:45 min")}
                   value={formData.duration}
                   onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
                   className="bg-onyx border-graphite text-white placeholder:text-steel"
@@ -207,7 +209,7 @@ export default function AddSectionPage() {
                 <p className="text-base font-medium text-white">
                   {isUploading ? `Uploading... ${uploadProgress}%` : videoFile ? videoFile.name : "Click to upload video file"}
                 </p>
-                <p className="text-sm text-fog mt-2">Upload directly to Bunny Stream (No size limit)</p>
+                <p className="text-sm text-fog mt-2">{t("Upload directly to Bunny Stream (No size limit)")}</p>
                 <input 
                   type="file" 
                   className="hidden" 
@@ -230,8 +232,8 @@ export default function AddSectionPage() {
               <div className="border border-green-500/30 bg-green-500/10 rounded-[10px] p-6 flex items-center gap-4">
                 <CheckCircle2 className="w-8 h-8 text-green-500" />
                 <div>
-                  <p className="text-white font-medium">Video uploaded successfully!</p>
-                  <p className="text-sm text-green-500/70">You can now submit the section.</p>
+                  <p className="text-white font-medium">{t("Video uploaded successfully!")}</p>
+                  <p className="text-sm text-green-500/70">{t("You can now submit the section.")}</p>
                 </div>
               </div>
             )}
@@ -239,14 +241,14 @@ export default function AddSectionPage() {
 
           {/* Access & Visibility */}
           <div className="space-y-4">
-            <h4 className="text-xs font-bold text-fog tracking-widest uppercase">Access & Visibility</h4>
+            <h4 className="text-xs font-bold text-fog tracking-widest uppercase">{t("Access & Visibility")}</h4>
             
             <label className="flex items-start gap-4 p-5 border border-graphite bg-carbon rounded-xl cursor-pointer hover:border-slate transition">
               <input type="checkbox" className="mt-1 w-5 h-5 rounded border-graphite bg-onyx text-copper focus:ring-copper" 
                 checked={formData.isFreePreview} onChange={(e) => setFormData({...formData, isFreePreview: e.target.checked})} />
               <div>
-                <p className="text-base font-medium text-white">Free Preview Section</p>
-                <p className="text-sm text-fog mt-1">Allow prospective students to watch videos in this section without purchasing the course.</p>
+                <p className="text-base font-medium text-white">{t("Free Preview Section")}</p>
+                <p className="text-sm text-fog mt-1">{t("Allow prospective students to watch videos in this section without purchasing the course.")}</p>
               </div>
             </label>
             
@@ -254,8 +256,8 @@ export default function AddSectionPage() {
               <input type="checkbox" className="mt-1 w-5 h-5 rounded border-copper/50 bg-onyx text-copper focus:ring-copper" 
                 checked={formData.isDraft} onChange={(e) => setFormData({...formData, isDraft: e.target.checked})} />
               <div>
-                <p className="text-base font-medium text-copper">Keep as Draft</p>
-                <p className="text-sm text-copper/70 mt-1">Hide this section from enrolled students until you finish adding all lessons.</p>
+                <p className="text-base font-medium text-copper">{t("Keep as Draft")}</p>
+                <p className="text-sm text-copper/70 mt-1">{t("Hide this section from enrolled students until you finish adding all lessons.")}</p>
               </div>
             </label>
           </div>
@@ -263,10 +265,10 @@ export default function AddSectionPage() {
           {/* Buttons */}
           <div className="flex justify-end gap-4 pt-6 border-t border-graphite">
             <Button type="button" variant="outline" onClick={() => router.back()} className="border-graphite text-fog hover:text-white rounded-full px-6">
-              Cancel
+              {t("Cancel")}
             </Button>
             <Button type="submit" disabled={isLoading || isUploading || !bunnyVideoId} className="bg-white text-black hover:bg-gray-200 rounded-full font-medium px-8">
-              {isLoading ? "Adding..." : "Add Section"}
+              {isLoading ? t("Adding...") : t("Add Section")}
             </Button>
           </div>
         </form>

@@ -7,8 +7,10 @@ import { Course } from "@/src/types";
 import { BookOpen, PlayCircle, Tag, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useLanguage } from "@/src/context/LanguageContext";
 
 export default function MyCoursesPage() {
+  const { t } = useLanguage();
   const [courses, setCourses] = useState<any[]>([]); // استخدمنا any عشان نقبل paymentStatus
   const [isLoading, setIsLoading] = useState(true);
 
@@ -58,18 +60,18 @@ export default function MyCoursesPage() {
         
         {/* Header */}
         <div className="mb-12 border-b border-graphite pb-8">
-          <h1 className="font-serif text-4xl text-white">My Learning</h1>
-          <p className="text-fog mt-2">Track your enrollments and continue your learning journey.</p>
+          <h1 className="font-serif text-4xl text-white">{t("My Learning")}</h1>
+          <p className="text-fog mt-2">{t("Track your enrollments and continue your learning journey.")}</p>
         </div>
 
         {courses.length === 0 ? (
           <div className="text-center py-24 bg-onyx rounded-[10px] border border-graphite">
             <BookOpen className="mx-auto h-12 w-12 text-[#2e3038] mb-4" />
-            <h3 className="text-lg font-medium text-white">You don't have any courses yet</h3>
-            <p className="text-fog mt-1 mb-6">Explore our catalog and start learning today.</p>
+            <h3 className="text-lg font-medium text-white">{t("You don't have any courses yet")}</h3>
+            <p className="text-fog mt-1 mb-6">{t("Explore our catalog and start learning today.")}</p>
             <Link href="/courses">
               <Button className="bg-white text-black hover:bg-gray-200 rounded-full font-medium px-8">
-                Browse Catalog
+                {t("Browse Catalog")}
               </Button>
             </Link>
           </div>
@@ -95,9 +97,9 @@ export default function MyCoursesPage() {
                     
                     {/* شارة الحالة */}
                     <div className="absolute top-3 right-3">
-                      {isApproved && <span className="bg-green-500/90 text-white text-xs font-bold px-3 py-1 rounded-full">Enrolled</span>}
-                      {isPending && <span className="bg-yellow-500/90 text-white text-xs font-bold px-3 py-1 rounded-full">Pending ⏳</span>}
-                      {isRejected && <span className="bg-red-500/90 text-white text-xs font-bold px-3 py-1 rounded-full">Rejected ❌</span>}
+                      {isApproved && <span className="bg-green-500/90 text-white text-xs font-bold px-3 py-1 rounded-full">{t("Enrolled")}</span>}
+                      {isPending && <span className="bg-yellow-500/90 text-white text-xs font-bold px-3 py-1 rounded-full">{t("Pending ⏳")}</span>}
+                      {isRejected && <span className="bg-red-500/90 text-white text-xs font-bold px-3 py-1 rounded-full">{t("Rejected ❌")}</span>}
                     </div>
                   </div>
 
@@ -105,7 +107,7 @@ export default function MyCoursesPage() {
                   <div className="p-6 flex flex-col grow">
                     <div className="flex items-center gap-2 text-xs font-semibold text-copper mb-3 tracking-wider uppercase">
                       <Tag size={12} />
-                      <span>{course.category}</span>
+                      <span>{t(course.category)}</span>
                     </div>
 
                     <h2 className="text-xl font-serif text-white mb-2 line-clamp-2 leading-snug">
@@ -116,7 +118,7 @@ export default function MyCoursesPage() {
                     {isApproved && (
                       <div className="mt-2 mb-4">
                         <div className="flex justify-between text-xs text-fog mb-1.5">
-                          <span>{course.completedCount || 0} / {course.totalSections || 0} sections</span>
+                          <span>{course.completedCount || 0} / {course.totalSections || 0} {t("sections")}</span>
                           <span className="text-copper font-bold">{course.progress || 0}%</span>
                         </div>
                         <div className="w-full bg-graphite h-1.5 rounded-full overflow-hidden">
@@ -133,7 +135,7 @@ export default function MyCoursesPage() {
                       {course.instructor?.avatar ? (
                         <img 
                           src={course.instructor.avatar} 
-                          alt="Instructor"
+                          alt={t("Instructor")}
                           className="w-6 h-6 rounded-full object-cover border border-[#2e3038]" 
                         />
                       ) : (
@@ -148,17 +150,17 @@ export default function MyCoursesPage() {
                       {isApproved ? (
                         <Link href={`/courses/${course._id}/learn`}>
                           <Button className="w-full bg-carbon text-white border border-[#2e3038] hover:bg-graphite hover:border-copper transition-colors rounded-full font-medium">
-                            Continue Learning
+                            {t("Continue Learning")}
                           </Button>
                         </Link>
                       ) : isPending ? (
                         <Button disabled className="w-full bg-yellow-500/10 text-yellow-500 border border-yellow-500/30 rounded-full font-medium">
-                          Pending Approval
+                          {t("Pending Approval")}
                         </Button>
                       ) : (
                         <Link href={`/courses/${course._id}/checkout`}>
                           <Button className="w-full bg-white text-black hover:bg-gray-200 rounded-full font-medium">
-                            Upload New Receipt
+                            {t("Upload New Receipt")}
                           </Button>
                         </Link>
                       )}

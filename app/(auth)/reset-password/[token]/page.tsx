@@ -11,8 +11,10 @@ import Link from "next/link";
 import { useState } from "react";
 import api from "@/lib/axios";
 import { resetPasswordSchema, ResetPasswordSchemaType } from "@/src/schema/auth.schema";
+import { useLanguage } from "@/src/context/LanguageContext";
 
 export default function ResetPasswordPage() {
+  const { t } = useLanguage();
   const router = useRouter();
   const params = useParams();
   const token = params.token as string;
@@ -26,17 +28,17 @@ export default function ResetPasswordPage() {
 
   async function handleSubmit(values: ResetPasswordSchemaType) {
     if (!token) {
-      toast.error("Invalid reset link.");
+      toast.error(t("Invalid reset link."));
       return;
     }
 
     setIsLoading(true);
     try {
       await api.patch(`/auth/reset-password/${token}`, { password: values.password });
-      toast.success("Password reset successfully! Please log in.", { position: "top-center" });
+      toast.success(t("Password reset successfully! Please log in."), { position: "top-center" });
       router.push("/login");
     } catch (err: any) {
-      const message = err?.response?.data?.message || "Invalid or expired token.";
+      const message = err?.response?.data?.message || t("Invalid or expired token.");
       toast.error(Array.isArray(message) ? message[0]?.msg : message, { position: "top-center" });
     } finally {
       setIsLoading(false);
@@ -50,8 +52,8 @@ export default function ResetPasswordPage() {
         <div className="absolute top-0 right-0 w-32 h-32 bg-copper/5 rounded-bl-full pointer-events-none"></div>
 
         <div className="text-center mb-8">
-          <h2 className="font-serif text-3xl text-white mb-2">Reset Password</h2>
-          <p className="text-sm text-fog">Enter a new password for your account.</p>
+          <h2 className="font-serif text-3xl text-white mb-2">{t("Reset Password")}</h2>
+          <p className="text-sm text-fog">{t("Enter a new password for your account.")}</p>
         </div>
 
         <form className="space-y-5" onSubmit={form.handleSubmit(handleSubmit)}>
@@ -61,7 +63,7 @@ export default function ResetPasswordPage() {
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel className="text-bone">New Password</FieldLabel>
+                  <FieldLabel className="text-bone">{t("New Password")}</FieldLabel>
                   <Input {...field} type="password" placeholder="********" className="bg-carbon border-graphite text-white placeholder:text-steel focus-visible:ring-copper" />
                   {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                 </Field>
@@ -75,7 +77,7 @@ export default function ResetPasswordPage() {
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel className="text-bone">Confirm New Password</FieldLabel>
+                  <FieldLabel className="text-bone">{t("Confirm New Password")}</FieldLabel>
                   <Input {...field} type="password" placeholder="********" className="bg-carbon border-graphite text-white placeholder:text-steel focus-visible:ring-copper" />
                   {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                 </Field>
@@ -84,13 +86,13 @@ export default function ResetPasswordPage() {
           </FieldGroup>
 
           <Button type="submit" disabled={isLoading} className="w-full bg-white text-black hover:bg-gray-200 rounded-full font-medium h-11 mt-2">
-            {isLoading ? "Resetting..." : "Reset Password"}
+            {isLoading ? t("Resetting...") : t("Reset Password")}
           </Button>
 
           <p className="text-center text-sm text-fog mt-4">
-            Remember your password?{" "}
+            {t("Remember your password?")}{" "}
             <Link href="/login" className="text-copper hover:underline">
-              Login
+              {t("Login")}
             </Link>
           </p>
         </form>

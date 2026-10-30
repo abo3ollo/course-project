@@ -6,10 +6,12 @@ import { useParams } from "next/navigation";
 import api from "@/lib/axios";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, XCircle, Loader2 } from "lucide-react";
+import { useLanguage } from "@/src/context/LanguageContext";
 
 type Status = "loading" | "success" | "error";
 
 export default function VerifyEmailPage() {
+  const { t } = useLanguage();
   const params = useParams();
   const token = params.token as string;
 
@@ -19,7 +21,7 @@ export default function VerifyEmailPage() {
   useEffect(() => {
     if (!token) {
       setStatus("error");
-      setMessage("Verification token is missing.");
+      setMessage(t("Verification token is missing."));
       return;
     }
 
@@ -27,11 +29,11 @@ export default function VerifyEmailPage() {
       try {
         const res = await api.get(`/auth/verify-email/${token}`);
         setStatus("success");
-        setMessage(res.data.message || "Email verified successfully!");
+        setMessage(res.data.message || t("Email verified successfully!"));
       } catch (err: any) {
         const msg =
           err?.response?.data?.message ||
-          "Verification failed. The link may be invalid or expired.";
+          t("Verification failed. The link may be invalid or expired.");
         setStatus("error");
         setMessage(Array.isArray(msg) ? msg[0]?.msg : msg);
       }
@@ -50,19 +52,19 @@ export default function VerifyEmailPage() {
         {status === "loading" && (
           <>
             <Loader2 className="w-16 h-16 text-copper mx-auto mb-6 animate-spin" />
-            <h1 className="font-serif text-3xl text-white mb-2">Verifying Email</h1>
-            <p className="text-fog">Please wait while we verify your account...</p>
+            <h1 className="font-serif text-3xl text-white mb-2">{t("Verifying Email")}</h1>
+            <p className="text-fog">{t("Please wait while we verify your account...")}</p>
           </>
         )}
 
         {status === "success" && (
           <>
             <CheckCircle2 className="w-16 h-16 text-green-400 mx-auto mb-6" />
-            <h1 className="font-serif text-3xl text-white mb-3">Email Verified!</h1>
+            <h1 className="font-serif text-3xl text-white mb-3">{t("Email Verified!")}</h1>
             <p className="text-fog mb-8">{message}</p>
             <Link href="/login">
               <Button className="w-full bg-white text-black hover:bg-gray-200 rounded-full font-medium h-11">
-                Go to Login
+                {t("Go to Login")}
               </Button>
             </Link>
           </>
@@ -71,17 +73,17 @@ export default function VerifyEmailPage() {
         {status === "error" && (
           <>
             <XCircle className="w-16 h-16 text-red-400 mx-auto mb-6" />
-            <h1 className="font-serif text-3xl text-white mb-3">Verification Failed</h1>
+            <h1 className="font-serif text-3xl text-white mb-3">{t("Verification Failed")}</h1>
             <p className="text-fog mb-8">{message}</p>
             <div className="flex flex-col gap-3">
               <Link href="/register">
                 <Button variant="outline" className="w-full border-graphite text-bone hover:bg-carbon rounded-full h-11">
-                  Register Again
+                  {t("Register Again")}
                 </Button>
               </Link>
               <Link href="/">
                 <Button variant="ghost" className="w-full text-fog hover:text-white rounded-full h-11">
-                  Go Home
+                  {t("Go Home")}
                 </Button>
               </Link>
             </div>

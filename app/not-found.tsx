@@ -1,7 +1,11 @@
+ "use client";
+
 import Link from "next/link";
 import { ArrowLeft, Ghost } from "lucide-react";
+import { useLanguage } from "@/src/context/LanguageContext";
 
 export default function NotFound() {
+  const { t } = useLanguage();
   return (
     <div className="min-h-screen bg-obsidian text-bone font-sans flex flex-col items-center justify-center relative overflow-hidden px-4 selection:bg-copper selection:text-white">
       
@@ -23,10 +27,10 @@ export default function NotFound() {
 
         {/* النص */}
         <h2 className="font-serif text-3xl md:text-4xl text-white">
-          Page Not Found
+          {t("Page Not Found")}
         </h2>
         <p className="text-fog text-lg">
-          The page you are looking for doesn't exist or has been moved. Let's get you back on track.
+          {t("The page you are looking for doesn't exist or has been moved. Let's get you back on track.")}
         </p>
 
         {/* الأزرار */}
@@ -36,13 +40,13 @@ export default function NotFound() {
             className="w-full sm:w-auto bg-white text-black px-8 py-3 rounded-full font-medium hover:bg-gray-200 transition-colors flex items-center justify-center gap-2"
           >
             <ArrowLeft size={18} />
-            Back to Home
+            {t("Back to Home")}
           </Link>
           <Link
             href="/courses"
             className="w-full sm:w-auto border border-[#777a88] text-white px-8 py-3 rounded-full font-medium hover:bg-white/5 transition-colors"
           >
-            Browse Courses
+            {t("Browse Courses")}
           </Link>
         </div>
       </div>

@@ -9,9 +9,11 @@ import { toast } from "sonner";
 import StudentDashboard from "@/src/components/dashboards/StudentDashboard";
 import InstructorDashboard from "@/src/components/dashboards/InstructorDashboard";
 import AdminDashboard from "@/src/components/dashboards/AdminDashboard";
+import { useLanguage } from "@/src/context/LanguageContext";
 
 export default function HomePage() {
   const { user, isAuthenticated, isLoading: isAuthLoading } = useAuth();
+  const { t } = useLanguage();
 
   const [stats, setStats] = useState<any>(null);
   const [isDataLoading, setIsDataLoading] = useState(true);
@@ -33,7 +35,7 @@ export default function HomePage() {
           }
         } catch (err) {
           console.error("Failed to load stats", err);
-          toast.error("Failed to load dashboard data");
+          toast.error(t("Failed to load dashboard data"));
         } finally {
           setIsDataLoading(false);
         }
@@ -77,17 +79,17 @@ export default function HomePage() {
       <div className="min-h-[80vh] bg-obsidian flex flex-col items-center justify-center text-center px-4 relative overflow-hidden">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-150 h-150 bg-copper/5 rounded-full blur-3xl pointer-events-none"></div>
         <h1 className="font-serif text-5xl md:text-7xl text-white mb-6 tracking-wide z-10">
-          Master Your Craft.
+          {t("Master Your Craft.")}
         </h1>
         <p className="text-fog text-lg md:text-xl max-w-2xl mb-12 z-10">
-          Join an exclusive platform to learn from industry experts and elevate your skills.
+          {t("Join an exclusive platform to learn from industry experts and elevate your skills.")}
         </p>
         <div className="flex gap-4 z-10">
           <Link href="/register" className="bg-white text-black px-8 py-3 rounded-full font-medium hover:bg-gray-200 transition">
-            Get Started
+            {t("Get Started")}
           </Link>
           <Link href="/login" className="border border-[#777a88] text-white px-8 py-3 rounded-full font-medium hover:bg-white/5 transition">
-            Sign In
+            {t("Sign In")}
           </Link>
         </div>
       </div>

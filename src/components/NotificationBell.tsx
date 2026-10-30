@@ -12,8 +12,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useLanguage } from "@/src/context/LanguageContext";
 
 export default function NotificationBell() {
+  const { language, t } = useLanguage();
   const [notifications, setNotifications] = useState<any[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
@@ -77,13 +79,13 @@ export default function NotificationBell() {
       >
         {/* Header */}
         <div className="flex justify-between items-center p-2 border-b border-graphite mb-2">
-          <span className="font-semibold text-white">Notifications</span>
+          <span className="font-semibold text-white">{t("Notifications")}</span>
           {unreadCount > 0 && (
             <button
               onClick={handleMarkAllAsRead}
               className="text-xs text-copper hover:underline"
             >
-              Mark all as read
+              {t("Mark all as read")}
             </button>
           )}
         </div>
@@ -92,7 +94,7 @@ export default function NotificationBell() {
         <div className="max-h-75 overflow-y-auto">
           {notifications.length === 0 ? (
             <p className="text-center text-sm text-fog p-6">
-              No notifications yet.
+              {t("No notifications yet.")}
             </p>
           ) : (
             notifications.map((notif) => (
@@ -112,7 +114,7 @@ export default function NotificationBell() {
                   {notif.sender?.avatar ? (
                     <img
                       src={notif.sender.avatar}
-                      alt="sender"
+                      alt={t("Notification sender")}
                       className="w-8 h-8 rounded-full object-cover border border-graphite mt-0.5"
                     />
                   ) : (
@@ -126,7 +128,7 @@ export default function NotificationBell() {
                       {notif.message}
                     </p>
                     <p className="text-xs text-steel mt-1">
-                      {new Date(notif.createdAt).toLocaleDateString()}
+                      {new Date(notif.createdAt).toLocaleDateString(language === "ar" ? "ar-EG" : "en-US")}
                     </p>
                   </div>
 

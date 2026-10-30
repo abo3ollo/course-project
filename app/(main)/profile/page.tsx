@@ -17,8 +17,10 @@ import {
   ChangePasswordSchemaType,
 } from "@/src/schema/profile.schema";
 import { Camera, Lock, ShieldCheck } from "lucide-react";
+import { useLanguage } from "@/src/context/LanguageContext";
 
 export default function ProfilePage() {
+  const { t } = useLanguage();
   const { user, isAuthenticated, isLoading: isAuthLoading, logout, refresh } = useAuth();
   const router = useRouter();
 
@@ -51,10 +53,10 @@ export default function ProfilePage() {
     setIsUpdatingProfile(true);
     try {
       await api.patch("/users/me", values);
-      toast.success("Profile updated successfully");
+      toast.success(t("Profile updated successfully"));
       await refresh();
     } catch (err: any) {
-      toast.error(err?.response?.data?.message || "Update failed");
+      toast.error(err?.response?.data?.message || t("Update failed"));
     } finally {
       setIsUpdatingProfile(false);
     }
@@ -67,11 +69,11 @@ export default function ProfilePage() {
         currentPassword: values.currentPassword,
         newPassword: values.newPassword,
       });
-      toast.success("Password changed. Please login again.");
+      toast.success(t("Password changed. Please login again."));
       await logout();
       router.push("/login");
     } catch (err: any) {
-      toast.error(err?.response?.data?.message || "Change failed");
+      toast.error(err?.response?.data?.message || t("Change failed"));
     } finally {
       setIsChangingPassword(false);
     }
@@ -89,10 +91,10 @@ export default function ProfilePage() {
       await api.post("/users/me/avatar", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-      toast.success("Avatar updated");
+      toast.success(t("Avatar updated"));
       await refresh();
     } catch (err: any) {
-      toast.error(err?.response?.data?.message || "Upload failed");
+      toast.error(err?.response?.data?.message || t("Upload failed"));
     } finally {
       setIsUploadingAvatar(false);
     }
@@ -114,19 +116,17 @@ export default function ProfilePage() {
 
         {/* Header */}
         <div className="border-b border-graphite pb-8">
-          <h1 className="font-serif text-4xl text-white">Account Settings</h1>
-          <p className="text-fog mt-2 max-w-2xl">
-            Manage your profile details, avatar credentials, and account security preferences.
-          </p>
+          <h1 className="font-serif text-4xl text-white">{t("Account Settings")}</h1>
+          <p className="text-fog mt-2 max-w-2xl">{t("Manage your profile details, avatar credentials, and account security preferences.")}</p>
         </div>
 
         {/* Tabs */}
         <div className="border-b border-graphite">
           <nav className="flex gap-8">
-            <button className="pb-4 border-b-2 border-copper text-copper font-medium">General Profile</button>
-            <button className="pb-4 text-fog hover:text-white font-medium transition-colors">Security & Password</button>
-            <button className="pb-4 text-fog hover:text-white font-medium transition-colors">Notifications</button>
-            <button className="pb-4 text-fog hover:text-white font-medium transition-colors">Billing & Certificates</button>
+            <button className="pb-4 border-b-2 border-copper text-copper font-medium">{t("General Profile")}</button>
+            <button className="pb-4 text-fog hover:text-white font-medium transition-colors">{t("Security & Password")}</button>
+            <button className="pb-4 text-fog hover:text-white font-medium transition-colors">{t("Notifications")}</button>
+            <button className="pb-4 text-fog hover:text-white font-medium transition-colors">{t("Billing & Certificates")}</button>
           </nav>
         </div>
 
@@ -137,15 +137,15 @@ export default function ProfilePage() {
 
             {/* Avatar Card */}
             <div className="bg-onyx p-8 rounded-[10px] border border-graphite">
-              <h2 className="font-serif text-2xl text-white mb-1">Profile Picture</h2>
-              <p className="text-sm text-fog mb-6">This image will appear across your enrolled courses, certificates, and forum interactions.</p>
+              <h2 className="font-serif text-2xl text-white mb-1">{t("Profile Picture")}</h2>
+              <p className="text-sm text-fog mb-6">{t("This image will appear across your enrolled courses, certificates, and forum interactions.")}</p>
 
               <div className="flex items-center gap-6">
                 <div className="relative">
                   {user?.avatar && !user.avatar.includes('default-avatar') ? (
                     <img
                       src={user.avatar}
-                      alt="Avatar"
+                      alt={t("Avatar")}
                       className="w-24 h-24 rounded-full object-cover border-2 border-graphite"
                       onError={(e) => {
                         e.currentTarget.style.display = 'none';
@@ -165,12 +165,12 @@ export default function ProfilePage() {
                 <div>
                   <div className="flex gap-3 mb-3">
                     <label className="cursor-pointer bg-white text-black px-5 py-2.5 rounded-full text-sm font-medium hover:bg-gray-200 transition">
-                      {isUploadingAvatar ? "Uploading..." : "Change Avatar"}
+                      {isUploadingAvatar ? t("Uploading...") : t("Change Avatar")}
                       <input type="file" className="hidden" accept="image/*" onChange={handleAvatarUpload} disabled={isUploadingAvatar} />
                     </label>
-                    <Button variant="outline" className="rounded-full text-sm border-graphite text-fog hover:text-white hover:bg-carbon">Remove</Button>
+                    <Button variant="outline" className="rounded-full text-sm border-graphite text-fog hover:text-white hover:bg-carbon">{t("Remove")}</Button>
                   </div>
-                  <p className="text-xs text-steel">Recommended: JPG, GIF or PNG. Max size: 5MB.</p>
+                  <p className="text-xs text-steel">{t("Recommended: JPG, GIF or PNG. Max size: 5MB.")}</p>
                 </div>
               </div>
             </div>
@@ -179,11 +179,11 @@ export default function ProfilePage() {
             <div className="bg-onyx p-8 rounded-[10px] border border-graphite">
               <div className="flex justify-between items-start mb-6 border-b border-graphite pb-4">
                 <div>
-                  <h2 className="font-serif text-2xl text-white mb-1">Personal Information</h2>
-                  <p className="text-sm text-fog">Update your personal details and public learning identity.</p>
+                  <h2 className="font-serif text-2xl text-white mb-1">{t("Personal Information")}</h2>
+                  <p className="text-sm text-fog">{t("Update your personal details and public learning identity.")}</p>
                 </div>
                 <span className={`px-3 py-1 rounded-full text-xs font-medium border ${user?.isVerified ? 'bg-copper/10 text-copper border-copper/30' : 'bg-red-400/10 text-red-400 border-red-400/30'}`}>
-                  {user?.isVerified ? "Verified Student" : "Unverified"}
+                  {user?.isVerified ? t("Verified Student") : t("Unverified")}
                 </span>
               </div>
 
@@ -195,7 +195,7 @@ export default function ProfilePage() {
                       control={profileForm.control}
                       render={({ field, fieldState }) => (
                         <Field data-invalid={fieldState.invalid}>
-                          <FieldLabel className="text-bone">First Name</FieldLabel>
+                          <FieldLabel className="text-bone">{t("First Name")}</FieldLabel>
                           <Input {...field} className="bg-carbon border-graphite text-white focus-visible:ring-copper" />
                           {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                         </Field>
@@ -208,7 +208,7 @@ export default function ProfilePage() {
                       control={profileForm.control}
                       render={({ field, fieldState }) => (
                         <Field data-invalid={fieldState.invalid}>
-                          <FieldLabel className="text-bone">Last Name</FieldLabel>
+                          <FieldLabel className="text-bone">{t("Last Name")}</FieldLabel>
                           <Input {...field} className="bg-carbon border-graphite text-white focus-visible:ring-copper" />
                           {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                         </Field>
@@ -218,14 +218,14 @@ export default function ProfilePage() {
                 </div>
 
                 <FieldGroup>
-                  <FieldLabel className="text-bone">Email Address</FieldLabel>
+                  <FieldLabel className="text-bone">{t("Email Address")}</FieldLabel>
                   <Input value={user?.email || ""} disabled className="bg-carbon/50 border-graphite text-fog cursor-not-allowed" />
                 </FieldGroup>
 
                 <div className="flex justify-end gap-3 pt-6 mt-6 border-t border-graphite">
-                  <Button type="button" variant="ghost" className="rounded-full text-fog hover:text-white">Cancel</Button>
+                  <Button type="button" variant="ghost" className="rounded-full text-fog hover:text-white">{t("Cancel")}</Button>
                   <Button type="submit" disabled={isUpdatingProfile} className="bg-white text-black hover:bg-gray-200 rounded-full font-medium px-6">
-                    {isUpdatingProfile ? "Updating..." : "Update Profile"}
+                    {isUpdatingProfile ? t("Updating...") : t("Update Profile")}
                   </Button>
                 </div>
               </form>
@@ -242,8 +242,8 @@ export default function ProfilePage() {
                   <Lock size={20} />
                 </div>
                 <div>
-                  <h2 className="font-serif text-xl text-white">Change Password</h2>
-                  <p className="text-xs text-fog mt-1">Ensure your account is protected with a secure password.</p>
+                  <h2 className="font-serif text-xl text-white">{t("Change Password")}</h2>
+                  <p className="text-xs text-fog mt-1">{t("Ensure your account is protected with a secure password.")}</p>
                 </div>
               </div>
 
@@ -254,7 +254,7 @@ export default function ProfilePage() {
                     control={passwordForm.control}
                     render={({ field, fieldState }) => (
                       <Field data-invalid={fieldState.invalid}>
-                        <FieldLabel className="text-bone text-sm">Current Password</FieldLabel>
+                        <FieldLabel className="text-bone text-sm">{t("Current Password")}</FieldLabel>
                         <Input type="password" {...field} className="bg-carbon border-graphite text-white focus-visible:ring-copper" />
                         {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                       </Field>
@@ -267,8 +267,8 @@ export default function ProfilePage() {
                     control={passwordForm.control}
                     render={({ field, fieldState }) => (
                       <Field data-invalid={fieldState.invalid}>
-                        <FieldLabel className="text-bone text-sm">New Password</FieldLabel>
-                        <Input type="password" {...field} className="bg-carbon border-graphite text-white focus-visible:ring-copper" placeholder="At least 8 characters" />
+                        <FieldLabel className="text-bone text-sm">{t("New Password")}</FieldLabel>
+                        <Input type="password" {...field} className="bg-carbon border-graphite text-white focus-visible:ring-copper" placeholder={t("At least 8 characters")} />
                         {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                       </Field>
                     )}
@@ -280,8 +280,8 @@ export default function ProfilePage() {
                     control={passwordForm.control}
                     render={({ field, fieldState }) => (
                       <Field data-invalid={fieldState.invalid}>
-                        <FieldLabel className="text-bone text-sm">Confirm New Password</FieldLabel>
-                        <Input type="password" {...field} className="bg-carbon border-graphite text-white focus-visible:ring-copper" placeholder="Repeat new password" />
+                        <FieldLabel className="text-bone text-sm">{t("Confirm New Password")}</FieldLabel>
+                        <Input type="password" {...field} className="bg-carbon border-graphite text-white focus-visible:ring-copper" placeholder={t("Repeat new password")} />
                         {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                       </Field>
                     )}
@@ -290,7 +290,7 @@ export default function ProfilePage() {
 
                 <Button type="submit" disabled={isChangingPassword} className="w-full bg-white text-black hover:bg-gray-200 rounded-full font-medium mt-4">
                   <Lock size={16} className="mr-2" />
-                  {isChangingPassword ? "Changing..." : "Change Password"}
+                  {isChangingPassword ? t("Changing...") : t("Change Password")}
                 </Button>
               </form>
             </div>
@@ -301,10 +301,10 @@ export default function ProfilePage() {
                 <ShieldCheck size={20} />
               </div>
               <div>
-                <h3 className="font-serif text-lg text-white mb-1">Two-Factor Authentication</h3>
-                <p className="text-xs text-fog mb-3 leading-relaxed">Add an extra layer of protection to your account with authenticator apps.</p>
+                <h3 className="font-serif text-lg text-white mb-1">{t("Two-Factor Authentication")}</h3>
+                <p className="text-xs text-fog mb-3 leading-relaxed">{t("Add an extra layer of protection to your account with authenticator apps.")}</p>
                 <button className="text-sm text-copper font-medium hover:underline flex items-center gap-1">
-                  Configure 2FA &rarr;
+                  {t("Configure 2FA →")}
                 </button>
               </div>
             </div>

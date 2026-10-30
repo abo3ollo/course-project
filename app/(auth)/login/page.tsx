@@ -12,8 +12,10 @@ import { useState } from "react";
 import api from "@/lib/axios";
 import { useAuth } from "@/src/context/AuthContext";
 import { loginSchema, loginSchemaType } from "@/src/schema/login.schema";
+import { useLanguage } from "@/src/context/LanguageContext";
 
 export default function LoginPage() {
+  const { t } = useLanguage();
   const router = useRouter();
   const { refresh } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
@@ -33,16 +35,16 @@ export default function LoginPage() {
     try {
       await api.post("/auth/login", values);
       await refresh();
-      toast.success("Logged In Successfully");
+      toast.success(t("Logged In Successfully"));
       router.push("/");
     } catch (err: any) {
       const status = err?.response?.status;
-      const message = err?.response?.data?.message || "Something went wrong.";
+      const message = err?.response?.data?.message || t("Something went wrong.");
 
       if (status === 403) {
         setNeedsVerification(true);
         setUnverifiedEmail(values.email);
-        toast.error("Please verify your email first", { position: "top-center" });
+        toast.error(t("Please verify your email first"), { position: "top-center" });
       } else {
         const displayMessage = Array.isArray(message) ? message[0]?.msg : message;
         toast.error(displayMessage, { position: "top-center" });
@@ -56,9 +58,9 @@ export default function LoginPage() {
     setIsResending(true);
     try {
       await api.post("/auth/resend-verification", { email: unverifiedEmail });
-      toast.success("Verification email sent! Check your inbox.");
+      toast.success(t("Verification email sent! Check your inbox."));
     } catch {
-      toast.error("Failed to resend. Try again later.");
+      toast.error(t("Failed to resend. Try again later."));
     } finally {
       setIsResending(false);
     }
@@ -72,8 +74,8 @@ export default function LoginPage() {
         <div className="absolute top-0 right-0 w-32 h-32 bg-copper/5 rounded-bl-full pointer-events-none"></div>
 
         <div className="text-center mb-8">
-          <h2 className="font-serif text-3xl text-white mb-2">Log in</h2>
-          <p className="text-sm text-fog">Welcome back. Enter your details to continue.</p>
+          <h2 className="font-serif text-3xl text-white mb-2">{t("Log in")}</h2>
+          <p className="text-sm text-fog">{t("Welcome back. Enter your details to continue.")}</p>
         </div>
 
         <form className="space-y-5" onSubmit={form.handleSubmit(handleLogin)}>
@@ -84,7 +86,7 @@ export default function LoginPage() {
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel className="text-bone">Email</FieldLabel>
+                  <FieldLabel className="text-bone">{t("Email")}</FieldLabel>
                   <Input
                     {...field}
                     aria-invalid={fieldState.invalid}
@@ -107,9 +109,9 @@ export default function LoginPage() {
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
                   <div className="flex items-center justify-between mb-1">
-                    <FieldLabel className="text-bone">Password</FieldLabel>
+                    <FieldLabel className="text-bone">{t("Password")}</FieldLabel>
                     <Link href="/forgot-password" className="text-xs text-copper hover:underline">
-                      Forgot password?
+                      {t("Forgot password?")}
                     </Link>
                   </div>
                   <Input
@@ -129,7 +131,7 @@ export default function LoginPage() {
           {needsVerification && (
             <div className="p-4 bg-copper/10 border border-copper/30 rounded-[10px]">
               <p className="text-sm text-copper mb-3">
-                Your email is not verified. Check your inbox for the verification link.
+                {t("Your email is not verified. Check your inbox for the verification link.")}
               </p>
               <Button
                 type="button"
@@ -138,7 +140,7 @@ export default function LoginPage() {
                 disabled={isResending}
                 className="w-full border-copper/50 text-copper hover:bg-copper/20 hover:text-copper rounded-full"
               >
-                {isResending ? "Sending..." : "Resend Verification Email"}
+                {isResending ? t("Sending...") : t("Resend Verification Email")}
               </Button>
             </div>
           )}
@@ -148,13 +150,13 @@ export default function LoginPage() {
             disabled={isLoading}
             className="w-full bg-white text-black hover:bg-gray-200 rounded-full font-medium h-11 mt-2"
           >
-            {isLoading ? "Logging in..." : "Log In"}
+            {isLoading ? t("Logging in...") : t("Log In")}
           </Button>
 
           <p className="text-center text-sm text-fog mt-4">
-            Don&apos;t have an account?{" "}
+            {t("Don't have an account?")}{" "}
             <Link href="/register" className="text-copper hover:underline">
-              Sign Up
+              {t("Sign Up")}
             </Link>
           </p>
         </form>
