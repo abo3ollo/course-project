@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import api from "@/lib/axios";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Users, BookOpen, Trash2, ShieldAlert } from "lucide-react";
+import { Users, BookOpen, Trash2, ShieldAlert, Eye } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useLanguage } from "@/src/context/LanguageContext";
 
@@ -146,11 +146,10 @@ export default function AdminDashboard() {
         <div className="flex gap-2 mb-8 bg-onyx p-1.5 rounded-full border border-graphite w-fit">
           <button
             onClick={() => setActiveTab("users")}
-            className={`flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-medium transition-all duration-300 ${
-              activeTab === "users"
+            className={`flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-medium transition-all duration-300 ${activeTab === "users"
                 ? "bg-carbon text-white shadow-sm border border-slate"
                 : "text-fog hover:text-white hover:bg-carbon/50 border border-transparent"
-            }`}
+              }`}
           >
             <Users
               size={16}
@@ -161,11 +160,10 @@ export default function AdminDashboard() {
 
           <button
             onClick={() => setActiveTab("courses")}
-            className={`flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-medium transition-all duration-300 ${
-              activeTab === "courses"
+            className={`flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-medium transition-all duration-300 ${activeTab === "courses"
                 ? "bg-carbon text-white shadow-sm border border-slate"
                 : "text-fog hover:text-white hover:bg-carbon/50 border border-transparent"
-            }`}
+              }`}
           >
             <BookOpen
               size={16}
@@ -250,13 +248,12 @@ export default function AdminDashboard() {
                     <td className="px-6 py-4 text-fog">{u.email}</td>
                     <td className="px-6 py-4">
                       <span
-                        className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          u.role === "ADMIN"
+                        className={`px-2 py-1 rounded-full text-xs font-medium ${u.role === "ADMIN"
                             ? "bg-red-400/10 text-red-400 border border-red-400/20"
                             : u.role === "INSTRUCTOR"
                               ? "bg-copper/10 text-copper border border-copper/20"
                               : "bg-green-400/10 text-green-400 border border-green-400/20"
-                        }`}
+                          }`}
                       >
                         {t(u.role)}
                       </span>
@@ -308,14 +305,28 @@ export default function AdminDashboard() {
                       </span>
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <Button
-                        onClick={() => handleDeleteCourse(c._id)}
-                        variant="ghost"
-                        size="sm"
-                        className="text-fog hover:text-red-400 hover:bg-red-400/10"
-                      >
-                        <Trash2 size={16} />
-                      </Button>
+                      <div className="flex justify-end gap-2">
+                        {/* ✅ زرار عرض الطلاب */}
+                        <Button
+                          onClick={() => router.push(`/admin/enrollments/${c._id}`)}
+                          variant="ghost"
+                          size="sm"
+                          className="text-fog hover:text-white hover:bg-carbon"
+                          title={t("View Students")}
+                        >
+                          <Eye size={16} />
+                        </Button>
+
+                        {/* زرار المسح */}
+                        <Button
+                          onClick={() => handleDeleteCourse(c._id)}
+                          variant="ghost"
+                          size="sm"
+                          className="text-fog hover:text-red-400 hover:bg-red-400/10"
+                        >
+                          <Trash2 size={16} />
+                        </Button>
+                      </div>
                     </td>
                   </tr>
                 ))}

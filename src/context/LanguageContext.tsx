@@ -33,6 +33,7 @@ const translations: Record<Language, Record<string, string>> = {
     "Get Started": "ابدأ الآن",
     "Sign In": "دخول",
     "Admin Control Panel": "لوحة تحكم المسؤول",
+    "View Students": "عرض الطلاب",
     "Welcome, {name}.": "مرحبًا، {name}.",
     "Manage the entire platform": "إدارة المنصة بالكامل",
     "Total Users": "إجمالي المستخدمين",
