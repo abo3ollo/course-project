@@ -25,13 +25,39 @@ export default function CourseDetailsClient({ courseId }: { courseId: string }) 
   const [newComment, setNewComment] = useState("");
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
 
+  // ✅ State عشان نحفظ اللينكات المؤمنة للفيديوهات
+  const [signedVideos, setSignedVideos] = useState<Record<string, string>>({});
+
+  // ✅ دالة جلب اللينك المؤمن من الباك إند
+  const loadSignedVideo = async (videoId: string) => {
+    if (signedVideos[videoId]) return; 
+    try {
+      const res = await api.get(`/courses/signed-video/${videoId}`);
+      setSignedVideos((prev) => ({ ...prev, [videoId]: res.data.data.signedUrl }));
+    } catch (err) {
+      console.error("Failed to load secure video", err);
+    }
+  };
+
   useEffect(() => {
     const fetchCourse = async () => {
       try {
         const res = await api.get(`/courses/${courseId}`);
-        setCourse(res.data.data.course);
-        setIsAuthorized(res.data.data.isAuthorized);
+        const courseData = res.data.data.course;
+        const authorized = res.data.data.isAuthorized;
+        const isInstructor = user?._id === courseData.instructor?._id;
+
+        setCourse(courseData);
+        setIsAuthorized(authorized);
         setEnrollmentStatus(res.data.data.enrollmentStatus);
+
+        // ✅ لو المستخدم عنده صلاحية (مشترك أو مدرس أو أدمن)، بنجيب اللينكات المؤمنة
+        const canWatch = authorized || isInstructor || user?.role === "ADMIN";
+        if (canWatch && courseData.sections) {
+          courseData.sections.forEach((section: any) => {
+            if (section.videoId) loadSignedVideo(section.videoId);
+          });
+        }
       } catch (err) {
         console.error("Failed to fetch course", err);
       } finally {
@@ -40,7 +66,7 @@ export default function CourseDetailsClient({ courseId }: { courseId: string }) 
     };
 
     if (courseId) fetchCourse();
-  }, [courseId]);
+  }, [courseId, user]);
 
   useEffect(() => {
     const fetchReviews = async () => {
@@ -236,8 +262,10 @@ export default function CourseDetailsClient({ courseId }: { courseId: string }) 
             {course.sections && course.sections.length > 0 ? (
               <div className="space-y-4">
                 {course.sections.map((section, index) => {
-                  // ✅ هنا السحر: لو هو مدرس الكورس أو أدمن، يقدر يشوف الفيديو
+                  // ✅ بنشوف هل المستخدم عنده صلاحية يتفرج (مشترك أو مدرس أو أدمن)
                   const canWatch = isAuthorized || isInstructor || user?.role === "ADMIN";
+                  // ✅ بنشوف هل اللينك المؤمن اتحمل ولا لأ
+                  const secureUrl = section.videoId ? signedVideos[section.videoId] : null;
 
                   return (
                     <div key={index} className="border border-graphite rounded-[10px] bg-onyx overflow-hidden">
@@ -257,16 +285,22 @@ export default function CourseDetailsClient({ courseId }: { courseId: string }) 
                         )}
                       </div>
 
-                      {/* ✅ عرض الفيديو لو عنده صلاحية */}
-                      {canWatch && (section.videoId || section.videoUrl) ? (
+                      {/* ✅ لو عنده صلاحية والفيديو موجود */}
+                      {canWatch && section.videoId ? (
                         <div className="bg-black aspect-video relative">
-                          <iframe
-                            src={`https://iframe.mediadelivery.net/embed/${process.env.NEXT_PUBLIC_BUNNY_LIBRARY_ID}/${section.videoId}`}
-                            loading="lazy"
-                            className="absolute top-0 left-0 w-full h-full"
-                            allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
-                            allowFullScreen
-                          ></iframe>
+                          {secureUrl ? (
+                            <iframe
+                              src={secureUrl}
+                              loading="lazy"
+                              className="absolute top-0 left-0 w-full h-full"
+                              allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
+                              allowFullScreen
+                            ></iframe>
+                          ) : (
+                            <div className="absolute inset-0 flex items-center justify-center text-fog">
+                              {t("Securing video stream...")}
+                            </div>
+                          )}
                         </div>
                       ) : (
                         <div className="p-10 bg-onyx flex flex-col items-center justify-center text-steel border-t border-graphite/50">
