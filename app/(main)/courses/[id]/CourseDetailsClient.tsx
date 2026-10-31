@@ -253,15 +253,17 @@ export default function CourseDetailsClient({ courseId }: { courseId: string }) 
                       )}
                     </div>
 
-                    {section.videoUrl ? (
-                      <div className="bg-black aspect-video">
-                        <video
-                          src={section.videoUrl}
-                          controls
-                          className="w-full h-full"
-                        >
-                          {t("Your browser does not support the video tag.")}
-                        </video>
+                    {/* في الجزء بتاع عرض الفيديو جوه الـ Curriculum */}
+                    {section.videoId ? (
+                      <div className="bg-black aspect-video relative">
+                        {/* ✅ مشغل Bunny Stream - هنستخدم اللينك المباشر هنا للعرض المبدئي */}
+                        <iframe
+                          src={`https://iframe.mediadelivery.net/embed/${process.env.NEXT_PUBLIC_BUNNY_LIBRARY_ID}/${section.videoId}`}
+                          loading="lazy"
+                          className="absolute top-0 left-0 w-full h-full"
+                          allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
+                          allowFullScreen
+                        ></iframe>
                       </div>
                     ) : (
                       <div className="p-10 bg-onyx flex flex-col items-center justify-center text-steel border-t border-graphite/50">

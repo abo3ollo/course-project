@@ -22,6 +22,7 @@ export type Section = {
   introVideoTitle?: string;
   duration?: string;
   videoUrl?: string;
+   videoId?: string; 
   isFreePreview?: boolean;
   isDraft?: boolean;
   lessons?: Lesson[];
