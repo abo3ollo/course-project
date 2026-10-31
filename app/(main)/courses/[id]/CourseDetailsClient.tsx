@@ -258,7 +258,7 @@ export default function CourseDetailsClient({ courseId }: { courseId: string }) 
                       </div>
 
                       {/* ✅ عرض الفيديو لو عنده صلاحية */}
-                      {canWatch && section.videoId ? (
+                      {canWatch && (section.videoId || section.videoUrl) ? (
                         <div className="bg-black aspect-video relative">
                           <iframe
                             src={`https://iframe.mediadelivery.net/embed/${process.env.NEXT_PUBLIC_BUNNY_LIBRARY_ID}/${section.videoId}`}

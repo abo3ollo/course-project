@@ -6,11 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, UploadCloud, Video } from "lucide-react";
+import { ArrowLeft, UploadCloud, Video, Trash2 } from "lucide-react"; // ✅ ضفنا Trash2
 import { toast } from "sonner";
 import api from "@/lib/axios";
 import { useLanguage } from "@/src/context/LanguageContext";
-import * as tus from "tus-js-client"; // ✅ استيراد مكتبة الرفع
+import * as tus from "tus-js-client";
 
 export default function EditSectionPage() {
   const { t } = useLanguage();
@@ -22,14 +22,13 @@ export default function EditSectionPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   
-  // ✅ States للفيديو الجديد
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
   const [newVideoId, setNewVideoId] = useState<string | null>(null);
 
-  // ✅ State للفيديو الحالي
   const [currentVideoId, setCurrentVideoId] = useState<string | null>(null);
+  const [isDeleted, setIsDeleted] = useState(false); // ✅ حالة مسح الفيديو
 
   const [formData, setFormData] = useState({
     title: "",
@@ -50,7 +49,6 @@ export default function EditSectionPage() {
             learningObjective: section.learningObjective || "",
             duration: section.duration || "",
           });
-          // ✅ بنحفظ الـ videoId الحالي عشان نعرضه
           setCurrentVideoId(section.videoId || null);
         }
       } catch (err) {
@@ -62,7 +60,6 @@ export default function EditSectionPage() {
     fetchSection();
   }, [courseId, sectionId, t]);
 
-  // ✅ دالة رفع الفيديو لـ Bunny
   const uploadVideoToBunny = async (file: File) => {
     setIsUploading(true);
     setUploadProgress(0);
@@ -117,21 +114,30 @@ export default function EditSectionPage() {
     }
   };
 
+  const handleDeleteVideo = () => {
+    setIsDeleted(true);
+    setCurrentVideoId(null);
+    toast.success(t("Video will be removed when you save."));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSaving(true);
 
     try {
-      // ✅ بنبعت البيانات كـ JSON (مفيش ملفات هنا لأن الرفع اتعمل مباشرة لـ Bunny)
       const payload: any = {
         title: formData.title,
         learningObjective: formData.learningObjective,
         duration: formData.duration,
       };
 
-      // لو فيه فيديو جديد اترفع، بنبعت الـ videoId الجديد
+      // لو فيه فيديو جديد اترفع
       if (newVideoId) {
         payload.videoId = newVideoId;
+      } 
+      // لو الفيديو اتمسح
+      else if (isDeleted) {
+        payload.videoId = null;
       }
 
       await api.patch(`/courses/${courseId}/sections/${sectionId}`, payload);
@@ -202,10 +208,21 @@ export default function EditSectionPage() {
             />
           </div>
 
-          {/* ✅ عرض الفيديو الحالي (لو موجود ومفيش فيديو جديد اترفع) */}
-          {currentVideoId && !newVideoId && (
+          {/* ✅ عرض الفيديو الحالي */}
+          {currentVideoId && !newVideoId && !isDeleted && (
             <div className="border border-graphite rounded-[10px] p-5 bg-carbon">
-              <Label className="mb-3 block text-sm font-semibold text-fog">{t("Current Video")}</Label>
+              <div className="flex justify-between items-center mb-3">
+                <Label className="text-sm font-semibold text-fog">{t("Current Video")}</Label>
+                <Button 
+                  type="button" 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={handleDeleteVideo}
+                  className="text-red-400 hover:text-red-300 hover:bg-red-400/10 h-8 px-3"
+                >
+                  <Trash2 size={14} className="mr-1" /> {t("Delete")}
+                </Button>
+              </div>
               <div className="aspect-video bg-black rounded-lg overflow-hidden relative">
                 <iframe
                   src={`https://iframe.mediadelivery.net/embed/${process.env.NEXT_PUBLIC_BUNNY_LIBRARY_ID}/${currentVideoId}`}
@@ -215,6 +232,13 @@ export default function EditSectionPage() {
                   allowFullScreen
                 ></iframe>
               </div>
+            </div>
+          )}
+
+          {/* ✅ رسالة لو الفيديو اتمسح */}
+          {isDeleted && (
+            <div className="border border-red-500/30 bg-red-500/10 rounded-[10px] p-4 text-center">
+              <p className="text-red-400 text-sm">{t("Video marked for deletion. Save changes to confirm.")}</p>
             </div>
           )}
 
@@ -239,7 +263,6 @@ export default function EditSectionPage() {
                   disabled={isUploading}
                 />
                 
-                {/* شريط التقدم */}
                 {isUploading && (
                   <div className="w-full max-w-md bg-graphite h-2 rounded-full mt-4 overflow-hidden">
                     <div 
