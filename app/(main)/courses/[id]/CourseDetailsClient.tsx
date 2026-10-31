@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation"; // ✅ لسه محتاجينه للـ redirect
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import api from "@/lib/axios";
 import { Course, Review } from "@/src/types";
@@ -12,7 +12,7 @@ import { useAuth } from "@/src/context/AuthContext";
 import { useLanguage } from "@/src/context/LanguageContext";
 
 export default function CourseDetailsClient({ courseId }: { courseId: string }) {
-  const router = useRouter(); // ✅ للـ redirect
+  const router = useRouter();
   const { isAuthenticated, user } = useAuth();
   const { language, t } = useLanguage();
 
@@ -152,7 +152,7 @@ export default function CourseDetailsClient({ courseId }: { courseId: string }) 
               />
 
               <div className="font-serif text-4xl text-white mb-6">
-                {course.price === 0 ? "Free" : `$${course.price}`}
+                {course.price === 0 ? t("Free") : `$${course.price}`}
               </div>
 
               {/* Action Buttons */}
@@ -235,44 +235,48 @@ export default function CourseDetailsClient({ courseId }: { courseId: string }) 
 
             {course.sections && course.sections.length > 0 ? (
               <div className="space-y-4">
-                {course.sections.map((section, index) => (
-                  <div key={index} className="border border-graphite rounded-[10px] bg-onyx overflow-hidden">
-                    <div className="p-5 bg-carbon border-b border-graphite flex justify-between items-center">
-                      <div>
-                        <h3 className="font-serif text-xl text-white">
-                          {t("Section {number}", { number: index + 1 })}: {section.title}
-                        </h3>
-                        <p className="text-sm text-fog mt-1">
-                          • {section.duration || "0 min"}
-                        </p>
+                {course.sections.map((section, index) => {
+                  // ✅ هنا السحر: لو هو مدرس الكورس أو أدمن، يقدر يشوف الفيديو
+                  const canWatch = isAuthorized || isInstructor || user?.role === "ADMIN";
+
+                  return (
+                    <div key={index} className="border border-graphite rounded-[10px] bg-onyx overflow-hidden">
+                      <div className="p-5 bg-carbon border-b border-graphite flex justify-between items-center">
+                        <div>
+                          <h3 className="font-serif text-xl text-white">
+                            {t("Section {number}", { number: index + 1 })}: {section.title}
+                          </h3>
+                          <p className="text-sm text-fog mt-1">
+                            • {section.duration || "0 min"}
+                          </p>
+                        </div>
+                        {section.isFreePreview && (
+                          <span className="text-xs font-semibold text-copper border border-copper/30 bg-copper/10 px-3 py-1 rounded-full uppercase tracking-wider">
+                            {t("Free Preview")}
+                          </span>
+                        )}
                       </div>
-                      {section.isFreePreview && (
-                        <span className="text-xs font-semibold text-copper border border-copper/30 bg-copper/10 px-3 py-1 rounded-full uppercase tracking-wider">
-                          {t("Free Preview")}
-                        </span>
+
+                      {/* ✅ عرض الفيديو لو عنده صلاحية */}
+                      {canWatch && section.videoId ? (
+                        <div className="bg-black aspect-video relative">
+                          <iframe
+                            src={`https://iframe.mediadelivery.net/embed/${process.env.NEXT_PUBLIC_BUNNY_LIBRARY_ID}/${section.videoId}`}
+                            loading="lazy"
+                            className="absolute top-0 left-0 w-full h-full"
+                            allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
+                            allowFullScreen
+                          ></iframe>
+                        </div>
+                      ) : (
+                        <div className="p-10 bg-onyx flex flex-col items-center justify-center text-steel border-t border-graphite/50">
+                          <Lock size={32} className="mb-3" />
+                          <p className="text-base font-medium">{t("Enroll to unlock this video")}</p>
+                        </div>
                       )}
                     </div>
-
-                    {/* في الجزء بتاع عرض الفيديو جوه الـ Curriculum */}
-                    {section.videoId ? (
-                      <div className="bg-black aspect-video relative">
-                        {/* ✅ مشغل Bunny Stream - هنستخدم اللينك المباشر هنا للعرض المبدئي */}
-                        <iframe
-                          src={`https://iframe.mediadelivery.net/embed/${process.env.NEXT_PUBLIC_BUNNY_LIBRARY_ID}/${section.videoId}`}
-                          loading="lazy"
-                          className="absolute top-0 left-0 w-full h-full"
-                          allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
-                          allowFullScreen
-                        ></iframe>
-                      </div>
-                    ) : (
-                      <div className="p-10 bg-onyx flex flex-col items-center justify-center text-steel border-t border-graphite/50">
-                        <Lock size={32} className="mb-3" />
-                        <p className="text-base font-medium">{t("Enroll to unlock this video")}</p>
-                      </div>
-                    )}
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             ) : (
               <div className="text-center py-16 bg-onyx rounded-[10px] border border-graphite border-dashed">

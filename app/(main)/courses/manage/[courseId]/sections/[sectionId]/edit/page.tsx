@@ -6,10 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { UploadCloud, ArrowLeft } from "lucide-react";
+import { ArrowLeft, UploadCloud, Video } from "lucide-react";
 import { toast } from "sonner";
 import api from "@/lib/axios";
 import { useLanguage } from "@/src/context/LanguageContext";
+import * as tus from "tus-js-client"; // ✅ استيراد مكتبة الرفع
 
 export default function EditSectionPage() {
   const { t } = useLanguage();
@@ -20,8 +21,15 @@ export default function EditSectionPage() {
 
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  
+  // ✅ States للفيديو الجديد
   const [videoFile, setVideoFile] = useState<File | null>(null);
-  const [currentVideoUrl, setCurrentVideoUrl] = useState("");
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [isUploading, setIsUploading] = useState(false);
+  const [newVideoId, setNewVideoId] = useState<string | null>(null);
+
+  // ✅ State للفيديو الحالي
+  const [currentVideoId, setCurrentVideoId] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     title: "",
@@ -42,7 +50,8 @@ export default function EditSectionPage() {
             learningObjective: section.learningObjective || "",
             duration: section.duration || "",
           });
-          setCurrentVideoUrl(section.videoUrl || "");
+          // ✅ بنحفظ الـ videoId الحالي عشان نعرضه
+          setCurrentVideoId(section.videoId || null);
         }
       } catch (err) {
         toast.error(t("Failed to load section"));
@@ -51,25 +60,81 @@ export default function EditSectionPage() {
       }
     };
     fetchSection();
-  }, [courseId, sectionId]);
+  }, [courseId, sectionId, t]);
+
+  // ✅ دالة رفع الفيديو لـ Bunny
+  const uploadVideoToBunny = async (file: File) => {
+    setIsUploading(true);
+    setUploadProgress(0);
+    setNewVideoId(null);
+
+    try {
+      const res = await api.post("/courses/bunny-upload-signature", { title: file.name });
+      const { videoId, libraryId, signature, expirationTime } = res.data.data;
+
+      const upload = new tus.Upload(file, {
+        endpoint: "https://video.bunnycdn.com/tusupload",
+        retryDelays: [0, 3000, 5000, 10000],
+        headers: {
+          AuthorizationSignature: signature,
+          AuthorizationExpire: expirationTime.toString(),
+          VideoId: videoId,
+          LibraryId: libraryId,
+        },
+        metadata: {
+          filetype: file.type,
+          title: file.name,
+        },
+        onError: (error) => {
+          console.error("Upload failed:", error);
+          toast.error(t("Failed to upload video to Bunny"));
+          setIsUploading(false);
+        },
+        onProgress: (bytesUploaded, bytesTotal) => {
+          const percentage = ((bytesUploaded / bytesTotal) * 100).toFixed(2);
+          setUploadProgress(Number(percentage));
+        },
+        onSuccess: () => {
+          toast.success(t("Video uploaded successfully!"));
+          setNewVideoId(videoId);
+          setIsUploading(false);
+          setUploadProgress(100);
+        },
+      });
+
+      upload.start();
+    } catch (err: any) {
+      toast.error(t("Failed to get upload signature"));
+      setIsUploading(false);
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setVideoFile(file);
+      uploadVideoToBunny(file);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSaving(true);
 
     try {
-      const data = new FormData();
-      data.append("title", formData.title);
-      data.append("learningObjective", formData.learningObjective);
-      data.append("duration", formData.duration);
-      
-      if (videoFile) {
-        data.append("video", videoFile);
+      // ✅ بنبعت البيانات كـ JSON (مفيش ملفات هنا لأن الرفع اتعمل مباشرة لـ Bunny)
+      const payload: any = {
+        title: formData.title,
+        learningObjective: formData.learningObjective,
+        duration: formData.duration,
+      };
+
+      // لو فيه فيديو جديد اترفع، بنبعت الـ videoId الجديد
+      if (newVideoId) {
+        payload.videoId = newVideoId;
       }
 
-      await api.patch(`/courses/${courseId}/sections/${sectionId}`, data, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      await api.patch(`/courses/${courseId}/sections/${sectionId}`, payload);
 
       toast.success(t("Section updated successfully!"));
       router.push(`/courses/manage/${courseId}`);
@@ -137,30 +202,62 @@ export default function EditSectionPage() {
             />
           </div>
 
-          {/* Current Video */}
-          {currentVideoUrl && (
+          {/* ✅ عرض الفيديو الحالي (لو موجود ومفيش فيديو جديد اترفع) */}
+          {currentVideoId && !newVideoId && (
             <div className="border border-graphite rounded-[10px] p-5 bg-carbon">
               <Label className="mb-3 block text-sm font-semibold text-fog">{t("Current Video")}</Label>
-              <video 
-                src={currentVideoUrl} 
-                controls 
-                className="w-full max-h-72 object-contain rounded-lg bg-black border border-graphite"
-              />
+              <div className="aspect-video bg-black rounded-lg overflow-hidden relative">
+                <iframe
+                  src={`https://iframe.mediadelivery.net/embed/${process.env.NEXT_PUBLIC_BUNNY_LIBRARY_ID}/${currentVideoId}`}
+                  loading="lazy"
+                  className="absolute top-0 left-0 w-full h-full"
+                  allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
+                  allowFullScreen
+                ></iframe>
+              </div>
             </div>
           )}
 
-          {/* Upload New Video */}
+          {/* ✅ مكان رفع الفيديو الجديد */}
           <div className="space-y-2">
             <Label className="text-bone text-base">{t("Update Video (Optional)")}</Label>
-            <label className="border-2 border-dashed border-graphite rounded-[10px] p-10 flex flex-col items-center justify-center bg-onyx cursor-pointer hover:border-copper/50 transition">
-              <div className="bg-carbon p-4 rounded-full mb-4 border border-graphite">
-                <UploadCloud size={32} className="text-copper" />
+            
+            {!newVideoId ? (
+              <label className="border-2 border-dashed border-graphite rounded-[10px] p-10 flex flex-col items-center justify-center bg-onyx cursor-pointer hover:border-copper/50 transition">
+                <div className="bg-carbon p-4 rounded-full mb-4 border border-graphite">
+                  <UploadCloud className="w-8 h-8 text-copper" />
+                </div>
+                <p className="text-base font-medium text-white">
+                  {isUploading ? `${t("Uploading...")} ${uploadProgress}%` : videoFile ? videoFile.name : t("Click to upload new video")}
+                </p>
+                <p className="text-sm text-fog mt-2">{t("Upload directly to Bunny Stream")}</p>
+                <input 
+                  type="file" 
+                  className="hidden" 
+                  accept="video/*" 
+                  onChange={handleFileChange}
+                  disabled={isUploading}
+                />
+                
+                {/* شريط التقدم */}
+                {isUploading && (
+                  <div className="w-full max-w-md bg-graphite h-2 rounded-full mt-4 overflow-hidden">
+                    <div 
+                      className="bg-copper h-full transition-all duration-300" 
+                      style={{ width: `${uploadProgress}%` }}
+                    ></div>
+                  </div>
+                )}
+              </label>
+            ) : (
+              <div className="border border-green-500/30 bg-green-500/10 rounded-[10px] p-6 flex items-center gap-4">
+                <Video className="w-8 h-8 text-green-500" />
+                <div>
+                  <p className="text-white font-medium">{t("New video uploaded successfully!")}</p>
+                  <p className="text-sm text-green-500/70">{t("It will replace the old video when you save.")}</p>
+                </div>
               </div>
-              <span className="text-sm font-medium text-white">
-                {videoFile ? videoFile.name : t("Click to upload new video (Max 100MB)")}
-              </span>
-              <input type="file" className="hidden" accept="video/*" onChange={(e) => setVideoFile(e.target.files?.[0] || null)} />
-            </label>
+            )}
           </div>
 
           {/* Buttons */}
@@ -168,7 +265,7 @@ export default function EditSectionPage() {
             <Button type="button" variant="outline" onClick={() => router.back()} className="border-graphite text-fog hover:text-white rounded-full px-6">
               {t("Cancel")}
             </Button>
-            <Button type="submit" disabled={isSaving} className="bg-white text-black hover:bg-gray-200 rounded-full font-medium px-8">
+            <Button type="submit" disabled={isSaving || isUploading} className="bg-white text-black hover:bg-gray-200 rounded-full font-medium px-8">
               {isSaving ? t("Saving...") : t("Save Changes")}
             </Button>
           </div>
